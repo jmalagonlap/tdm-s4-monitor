@@ -22,7 +22,7 @@
 
   /* Colores adicionales */
   --syrus-color: #2E7D32;
-  --anterior-color: #1976D2;
+  --mixfm-color: #1976D2;
   --diferencia-color: #F57C00;
   --success-color: #4CAF50;
   --warning-color: #FFC107;
@@ -294,8 +294,8 @@ html, body {
   color: var(--syrus-color);
 }
 
-.stat-icon.anterior {
-  color: var(--anterior-color);
+.stat-icon.mixfm {
+  color: var(--mixfm-color);
 }
 
 .stat-icon.comparison {
@@ -395,8 +395,8 @@ html, body {
   color: var(--syrus-color);
 }
 
-.anterior-col {
-  color: var(--anterior-color);
+.mixfm-col {
+  color: var(--mixfm-color);
 }
 
 .diff-col {

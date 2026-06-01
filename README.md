@@ -7,19 +7,19 @@ Monitor en tiempo real para comparar telemetrías **Syrus4G** vs **Anterior** en
 Este dashboard monitorea la cantidad de GPS recibidos en ÁRTIMO para 5 vehículos en paralelo con dos tecnologías:
 
 - **Syrus4G**: Tecnología nueva (placas con prefijo `1`)
-- **Anterior**: Telemetría anterior (placas sin prefijo)
+- **Mix FM**: Telemetría anterior (placas sin prefijo)
 
 Realiza peticiones cada minuto al API ÁRTIMO GPS latest, guarda históricamente los datos, y muestra un dashboard comparativo en vivo.
 
 ### Vehículos Monitoreados
 
-| Vehículo | Placa Syrus4G | Placa Anterior |
-|----------|---------------|----------------|
-| 1 | 1LKN501 | LKN501 |
-| 2 | 1JYX434 | JYX434 |
-| 3 | 1STE582 | STE582 |
-| 4 | 1STE577 | STE577 |
-| 5 | 1STE060 | STE060 |
+| Vehículo | Placa Syrus4G | Placa Mix FM |
+|----------|---------------|-------------|
+| 1 | CO_1LKN501 | CO_LKN501 |
+| 2 | CO_1JYX434 | CO_JYX434 |
+| 3 | CO_1STE582 | CO_STE582 |
+| 4 | CO_1STE577 | CO_STE577 |
+| 5 | CO_1STE060 | CO_STE060 |
 
 ## 🚀 Funcionalidades
 
@@ -67,10 +67,11 @@ La contraseña se actualiza cuando subes los secrets a Vercel.
 
 ## 🌐 Variables de Entorno (Vercel)
 
-Solo se requiere configurar la contraseña en Vercel Environment Variables:
+Configurar en Vercel Environment Variables:
 
 ```env
-ARTIMO_PASSWORD=Artimo2026!
+ARTIMO_USERNAME=usuario_tdm@artimo.com
+ARTIMO_PASSWORD=contraseña_secreta
 ```
 
 **Nota:** La URL del API (`https://api.artimo.com.co`) está hardcodeada en `config.js` y no requiere configuración.

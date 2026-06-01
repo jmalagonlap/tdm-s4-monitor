@@ -79,9 +79,9 @@ class TDMMonitor {
     }
 
     if (artimoAuth.localLogin(username, password)) {
-      // Guardar credenciales para usar con API ÁRTIMO
-      this.apiUsername = username;
-      this.apiPassword = password;
+      // Usar credenciales configuradas en CONFIG (desde env vars)
+      this.apiUsername = CONFIG.API_USERNAME;
+      this.apiPassword = CONFIG.API_PASSWORD;
 
       this.loginError.classList.remove('show');
       this.usernameInput.value = '';
@@ -197,7 +197,7 @@ class TDMMonitor {
     try {
       const timestamp = new Date();
       let syrusTotal = 0;
-      let anteriorTotal = 0;
+      let mixfmTotal = 0;
       const vehicleData = {};
 
       // Para cada vehículo, obtener GPS
@@ -205,19 +205,19 @@ class TDMMonitor {
         try {
           // Obtener GPS de ambas placas
           const syrusGPS = await this.getGPSCount(vehiculo.idSyrus);
-          const anteriorGPS = await this.getGPSCount(vehiculo.id);
+          const mixfmGPS = await this.getGPSCount(vehiculo.id);
 
           vehicleData[vehiculo.label] = {
             placaSyrus: vehiculo.idSyrus,
-            placaAnterior: vehiculo.id,
+            placaMixFM: vehiculo.id,
             syrus: syrusGPS,
-            anterior: anteriorGPS,
-            diferencia: syrusGPS - anteriorGPS,
+            mixfm: mixfmGPS,
+            diferencia: syrusGPS - mixfmGPS,
             timestamp: timestamp,
           };
 
           syrusTotal += syrusGPS;
-          anteriorTotal += anteriorGPS;
+          mixfmTotal += mixfmGPS;
         } catch (error) {
           console.error(`Error obteniendo datos para ${vehiculo.label}:`, error);
           vehicleData[vehiculo.label] = {
@@ -236,8 +236,8 @@ class TDMMonitor {
       const record = {
         timestamp: timestamp.toISOString(),
         syrusTotal,
-        anteriorTotal,
-        diferencia: syrusTotal - anteriorTotal,
+        mixfmTotal,
+        diferencia: syrusTotal - mixfmTotal,
         vehiculos: vehicleData,
       };
 
@@ -313,7 +313,7 @@ class TDMMonitor {
   updateDashboard(record) {
     // Stats cards
     document.getElementById('syrusTotal').textContent = record.syrusTotal.toLocaleString();
-    document.getElementById('anteriorTotal').textContent = record.anteriorTotal.toLocaleString();
+    document.getElementById('mixfmTotal').textContent = record.mixfmTotal.toLocaleString();
     document.getElementById('diferencia').textContent = record.diferencia.toLocaleString();
 
     // Timestamp
@@ -370,7 +370,7 @@ class TDMMonitor {
       row.innerHTML = `
         <td><strong>${label}</strong></td>
         <td class="syrus-col">${vData.syrus.toLocaleString()}</td>
-        <td class="anterior-col">${vData.anterior.toLocaleString()}</td>
+        <td class="mixfm-col">${vData.mixfm.toLocaleString()}</td>
         <td class="diff-col">${vData.diferencia.toLocaleString()}</td>
         <td>${status}</td>
       `;
@@ -397,7 +397,7 @@ class TDMMonitor {
       row.innerHTML = `
         <td>${timeStr}</td>
         <td>${record.syrusTotal}</td>
-        <td>${record.anteriorTotal}</td>
+        <td>${record.mixfmTotal}</td>
         <td>${record.diferencia}</td>
       `;
 
@@ -428,7 +428,7 @@ class TDMMonitor {
             pointBackgroundColor: '#2E7D32',
           },
           {
-            label: 'Anterior',
+            label: 'Mix FM',
             data: [],
             borderColor: '#1976D2',
             backgroundColor: 'rgba(25, 118, 210, 0.1)',
@@ -506,12 +506,12 @@ class TDMMonitor {
     });
 
     const syrusData = recordsToShow.map((r) => r.syrusTotal);
-    const anteriorData = recordsToShow.map((r) => r.anteriorTotal);
+    const mixfmData = recordsToShow.map((r) => r.mixfmTotal);
     const diferenciaData = recordsToShow.map((r) => r.diferencia);
 
     this.chart.data.labels = labels;
     this.chart.data.datasets[0].data = syrusData;
-    this.chart.data.datasets[1].data = anteriorData;
+    this.chart.data.datasets[1].data = mixfmData;
     this.chart.data.datasets[2].data = diferenciaData;
     this.chart.update();
   }
@@ -565,12 +565,12 @@ class TDMMonitor {
       return;
     }
 
-    let csv = 'Timestamp,Syrus4G Total,Anterior Total,Diferencia\n';
+    let csv = 'Timestamp,Syrus4G Total,Mix FM Total,Diferencia\n';
 
     for (const record of this.data) {
       const date = new Date(record.timestamp);
       const timeStr = date.toISOString();
-      csv += `"${timeStr}",${record.syrusTotal},${record.anteriorTotal},${record.diferencia}\n`;
+      csv += `"${timeStr}",${record.syrusTotal},${record.mixfmTotal},${record.diferencia}\n`;
     }
 
     // Crear y descargar archivo

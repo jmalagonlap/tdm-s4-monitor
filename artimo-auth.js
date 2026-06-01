@@ -6,7 +6,11 @@
 class ArtimoAuth {
   constructor() {
     // Usar credenciales desde CONFIG
-    this.users = CONFIG ? CONFIG.DEFAULT_USERS : { 'artimo': 'Artimo2026!' };
+    const apiUser = CONFIG ? CONFIG.API_USERNAME : 'artimo';
+    const apiPass = CONFIG ? CONFIG.API_PASSWORD : 'Artimo2026!';
+    this.users = {
+      [apiUser]: apiPass,
+    };
     this.sessionKey = CONFIG ? CONFIG.SESSION_STORAGE_KEY : 'artimo_session_tdm_s4';
     this.ssoTokenKey = 'artimo_sso_token';
     this.ssoTimestampKey = 'artimo_sso_timestamp';

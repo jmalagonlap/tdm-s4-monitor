@@ -13,12 +13,12 @@ const CONFIG = {
   POLL_INTERVAL: 60000, // 1 minuto
   TOKEN_REFRESH_INTERVAL: 110 * 60 * 1000, // 110 minutos (token válido por 120 min)
 
-  // Credenciales por defecto (para desarrollo)
-  DEFAULT_USERS: {
-    'artimo': window.ENV_ARTIMO_PASSWORD || 'Artimo2026!',
-  },
+  // Credenciales para API ÁRTIMO
+  API_USERNAME: window.ENV_ARTIMO_USERNAME || 'artimo',
+  API_PASSWORD: window.ENV_ARTIMO_PASSWORD || 'Artimo2026!',
 
   // Vehículos monitoreados (prefijo CO_ para Colombia)
+  // Syrus4G: placas con prefijo "1" | Mix FM: placas originales
   VEHICLES: [
     { id: 'CO_LKN501', idSyrus: 'CO_1LKN501', label: 'Vehículo 1' },
     { id: 'CO_JYX434', idSyrus: 'CO_1JYX434', label: 'Vehículo 2' },
