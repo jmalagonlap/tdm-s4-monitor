@@ -1,6 +1,7 @@
 {
   "public": true,
   "outputDirectory": ".",
+  "buildCommand": "echo 'Building v2...'",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
