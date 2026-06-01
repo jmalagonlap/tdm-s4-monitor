@@ -23,14 +23,16 @@ Realiza peticiones cada minuto al API ÁRTIMO GPS latest, guarda históricamente
 
 ## 🚀 Funcionalidades
 
+- ✅ **GitHub Actions Workflow**: Polling automático cada minuto (sin depender de navegador abierto)
 - ✅ **Autenticación SSO** desde hub ÁRTIMO
 - ✅ **Login local** con credenciales ÁRTIMO
-- ✅ **Monitoreo periódico** cada 60 segundos
-- ✅ **Almacenamiento histórico** en localStorage
+- ✅ **Monitoreo en tiempo real** cada 60 segundos (en navegador)
+- ✅ **Almacenamiento histórico** (GitHub + localStorage)
 - ✅ **Dashboard en vivo** con stats en tiempo real
 - ✅ **Gráfico comparativo** (últimas 24 horas)
 - ✅ **Tabla de vehículos** con detalle por unidad
 - ✅ **Registro de datos** con exportación a CSV
+- ✅ **Datos sincronizados** desde GitHub Actions
 - ✅ **Identidad visual ÁRTIMO** completa
 - ✅ **Responsive** (mobile, tablet, desktop)
 
@@ -100,6 +102,20 @@ Content-Type: application/json
 }
 ```
 
+## ⚙️ GitHub Actions Workflow (Polling Automático)
+
+El dashboard incluye un **GitHub Actions workflow** que ejecuta automáticamente cada minuto:
+
+```yaml
+# .github/workflows/poll-gps.yml
+- Obtiene credenciales de secrets
+- Hace polling del API ÁRTIMO
+- Guarda datos en data/gps-data.json
+- Mantiene histórico de 24 horas (1440 registros)
+```
+
+**No requiere configuración extra**, solo que los secrets estén configurados en GitHub.
+
 ## 🛠️ Desarrollo Local
 
 No requiere build. Abre directamente en navegador:
@@ -111,6 +127,8 @@ python -m http.server 8000
 # O con cualquier servidor local
 # Luego: http://localhost:8000
 ```
+
+**Nota**: En desarrollo local, el dashboard hará polling automático mientras tengas la página abierta.
 
 ## 📤 Deploy a Vercel
 

@@ -6,15 +6,28 @@ El proyecto está completamente listo para production en Vercel:
 
 - ✅ Código HTML, CSS, JavaScript configurado
 - ✅ Autenticación SSO + login local implementada
-- ✅ API monitor con polling cada minuto
-- ✅ Dashboard con gráficos y tablas
+- ✅ GitHub Actions workflow con polling cada minuto
+- ✅ Dashboard con gráficos y tablas en tiempo real
+- ✅ Sincronización de datos desde GitHub
+- ✅ Almacenamiento histórico automático
 - ✅ Identidad visual ÁRTIMO completa
 - ✅ Logo corporativo incluido
-- ✅ Repositorio GitHub inicializado y pusheado
+- ✅ Repositorio GitHub inicializado con workflow
 
 ## 🚀 Pasos para Deployment en Vercel
 
-### 1. Conectar Repositorio en Vercel
+### 1. Configurar Secrets en GitHub ⭐ PRIMERO
+
+En GitHub, ve a **Settings → Secrets and variables → Actions** y agrega:
+
+```
+ARTIMO_USERNAME = usuario_tdm@artimo.com
+ARTIMO_PASSWORD = contraseña_secreta
+```
+
+Estos secrets se usan automáticamente en el workflow `.github/workflows/poll-gps.yml` para hacer polling cada minuto.
+
+### 2. Conectar Repositorio en Vercel
 
 1. Ve a [vercel.com](https://vercel.com)
 2. Inicia sesión con tu cuenta (o crea una)
@@ -23,7 +36,7 @@ El proyecto está completamente listo para production en Vercel:
 5. Busca: `jmalagonlap/tdm-s4-monitor`
 6. Click "Import"
 
-### 2. Configurar Environment Variables
+### 3. Configurar Environment Variables en Vercel
 
 En Vercel, ve a **Settings → Environment Variables** y agrega:
 
@@ -34,7 +47,7 @@ ARTIMO_PASSWORD = contraseña_secreta
 
 > **Nota**: La URL del API (`https://api.artimo.com.co`) está hardcodeada en el código y no requiere configuración. El token se obtiene automáticamente usando estas credenciales.
 
-### 3. Deploy
+### 4. Deploy
 
 1. Vercel detectará automáticamente que es proyecto estático
 2. Click "Deploy"

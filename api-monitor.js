@@ -37,7 +37,10 @@ class TDMMonitor {
   /**
    * Inicia la aplicación
    */
-  init() {
+  async init() {
+    // Cargar datos históricos desde GitHub (generados por workflow)
+    await this.loadHistoricalData();
+
     // Verificar SSO o sesión existente
     if (artimoAuth.checkSSO() || artimoAuth.isSessionValid()) {
       this.showDashboard();
@@ -117,6 +120,45 @@ class TDMMonitor {
   showLoginError(message) {
     this.loginError.textContent = message;
     this.loginError.classList.add('show');
+  }
+
+  /**
+   * Carga datos históricos desde GitHub (generados por workflow)
+   */
+  async loadHistoricalData() {
+    try {
+      if (!window.dataLoader) {
+        console.warn('DataLoader no disponible');
+        return;
+      }
+
+      console.log('📥 Cargando datos históricos desde GitHub...');
+      const githubData = await dataLoader.getData();
+
+      if (githubData.records && githubData.records.length > 0) {
+        // Convertir y fusionar con datos locales
+        const convertedData = dataLoader.convertToChartData(githubData);
+
+        // Mantener solo los datos más recientes
+        this.data = convertedData.slice(-100);
+        this.saveData();
+
+        console.log(`✓ Cargados ${this.data.length} registros históricos desde GitHub`);
+
+        // Actualizar dashboard si ya estamos autenticados
+        if (this.data.length > 0) {
+          const latestRecord = this.data[this.data.length - 1];
+          this.updateDashboard(latestRecord);
+          this.renderVehiclesTable();
+          this.renderDataTable();
+          if (this.chart) {
+            this.updateChart();
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Error cargando datos históricos:', error.message);
+    }
   }
 
   /**

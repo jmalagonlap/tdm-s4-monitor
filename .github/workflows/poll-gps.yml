@@ -1,0 +1,44 @@
+name: Poll GPS Data
+
+on:
+  schedule:
+    # Ejecutar cada minuto (UTC)
+    - cron: '* * * * *'
+  workflow_dispatch: # Permitir ejecución manual
+
+jobs:
+  poll-gps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install --save-dev
+
+      - name: Poll GPS data from ÁRTIMO API
+        env:
+          ARTIMO_USERNAME: ${{ secrets.ARTIMO_USERNAME }}
+          ARTIMO_PASSWORD: ${{ secrets.ARTIMO_PASSWORD }}
+        run: node scripts/poll-gps.js
+
+      - name: Commit and push data
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Solo commit si hay cambios
+          if git diff --quiet data/gps-data.json; then
+            echo "No changes to commit"
+          else
+            git add data/gps-data.json
+            git commit -m "Update GPS data from ÁRTIMO API [skip ci]"
+            git push
+          fi
+        continue-on-error: true
