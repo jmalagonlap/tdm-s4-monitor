@@ -1,17 +1,5 @@
 {
   "public": true,
-  "env": [
-    {
-      "key": "ARTIMO_USERNAME",
-      "description": "Usuario del API ÁRTIMO (TDM)",
-      "example": "user@example.com"
-    },
-    {
-      "key": "ARTIMO_PASSWORD",
-      "description": "Contraseña del usuario ÁRTIMO",
-      "example": "password123"
-    }
-  ],
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
