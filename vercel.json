@@ -1,5 +1,6 @@
 {
   "public": true,
+  "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
