@@ -6,16 +6,23 @@
 class TDMMonitor {
   constructor() {
     // Usar configuración centralizada
-    this.vehiculos = CONFIG.VEHICLES;
     this.apiBaseUrl = CONFIG.API_BASE_URL;
     this.apiEndpoint = CONFIG.API_ENDPOINT;
     this.pollInterval = CONFIG.POLL_INTERVAL;
+    this.vehiculos = CONFIG.VEHICLES;
 
     // Data storage
     this.dataKey = CONFIG.DATA_STORAGE_KEY;
     this.data = this.loadData();
     this.pollTimeout = null;
     this.chart = null;
+
+    // Token management
+    this.apiToken = null;
+    this.apiTokenExpiry = null;
+    this.tokenRefreshInterval = null;
+    this.apiUsername = null;
+    this.apiPassword = null;
 
     // UI Elements
     this.loginOverlay = document.getElementById('loginOverlay');
@@ -72,6 +79,10 @@ class TDMMonitor {
     }
 
     if (artimoAuth.localLogin(username, password)) {
+      // Guardar credenciales para usar con API ÁRTIMO
+      this.apiUsername = username;
+      this.apiPassword = password;
+
       this.loginError.classList.remove('show');
       this.usernameInput.value = '';
       this.passwordInput.value = '';
@@ -117,6 +128,69 @@ class TDMMonitor {
   }
 
   /**
+   * Obtiene token del API ÁRTIMO
+   * @returns {Promise<string>}
+   */
+  async obtainToken() {
+    try {
+      if (!this.apiUsername || !this.apiPassword) {
+        throw new Error('Credenciales no configuradas');
+      }
+
+      const formData = new URLSearchParams();
+      formData.append('username', this.apiUsername);
+      formData.append('password', this.apiPassword);
+      formData.append('grant_type', 'password');
+
+      const response = await fetch(`${this.apiBaseUrl}${CONFIG.API_TOKENS_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Token Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      // Token válido por expires_in minutos
+      this.apiToken = data.access_token;
+      this.apiTokenExpiry = Date.now() + (data.expires_in * 60 * 1000);
+
+      console.log('Token obtenido exitosamente', { expires_in: data.expires_in });
+      return this.apiToken;
+    } catch (error) {
+      console.error('Error obteniendo token:', error);
+      this.updateStatus('Error de autenticación API', '');
+      throw error;
+    }
+  }
+
+  /**
+   * Obtiene token válido, obteniendo uno nuevo si es necesario
+   * @returns {Promise<string>}
+   */
+  async getValidToken() {
+    // Si no hay token o está expirado, obtener uno nuevo
+    if (!this.apiToken || Date.now() >= this.apiTokenExpiry) {
+      return this.obtainToken();
+    }
+    return this.apiToken;
+  }
+
+  /**
+   * Limpia el token actual
+   */
+  clearToken() {
+    this.apiToken = null;
+    this.apiTokenExpiry = null;
+  }
+
+  /**
    * Hace polling del API GPS
    */
   async pollGPSData() {
@@ -128,15 +202,14 @@ class TDMMonitor {
 
       // Para cada vehículo, obtener GPS
       for (const vehiculo of this.vehiculos) {
-        const placaSyrus = '1' + vehiculo.id;
-        const placaAnterior = vehiculo.id;
-
         try {
           // Obtener GPS de ambas placas
-          const syrusGPS = await this.getGPSCount(placaSyrus);
-          const anteriorGPS = await this.getGPSCount(placaAnterior);
+          const syrusGPS = await this.getGPSCount(vehiculo.idSyrus);
+          const anteriorGPS = await this.getGPSCount(vehiculo.id);
 
-          vehicleData[vehiculo.id] = {
+          vehicleData[vehiculo.label] = {
+            placaSyrus: vehiculo.idSyrus,
+            placaAnterior: vehiculo.id,
             syrus: syrusGPS,
             anterior: anteriorGPS,
             diferencia: syrusGPS - anteriorGPS,
@@ -146,8 +219,10 @@ class TDMMonitor {
           syrusTotal += syrusGPS;
           anteriorTotal += anteriorGPS;
         } catch (error) {
-          console.error(`Error obteniendo datos para ${vehiculo.id}:`, error);
-          vehicleData[vehiculo.id] = {
+          console.error(`Error obteniendo datos para ${vehiculo.label}:`, error);
+          vehicleData[vehiculo.label] = {
+            placaSyrus: vehiculo.idSyrus,
+            placaAnterior: vehiculo.id,
             syrus: 0,
             anterior: 0,
             diferencia: 0,
@@ -184,51 +259,52 @@ class TDMMonitor {
 
   /**
    * Obtiene cantidad de GPS de una placa
-   * @param {string} placa
+   * @param {string} placa - Placa en formato CO_XXXXX
    * @returns {Promise<number>}
    */
   async getGPSCount(placa) {
     try {
+      // Obtener token válido
+      const token = await this.getValidToken();
+
       // Realizar petición al API ÁRTIMO
-      // TODO: Ajustar URL y headers según autenticación real
-      const response = await fetch(`${this.apiBaseUrl}${this.apiEndpoint}?plate=${placa}`, {
+      const url = new URL(`${this.apiBaseUrl}${this.apiEndpoint}`);
+      url.searchParams.append('Plates', placa);
+
+      const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${this.getAuthToken()}`,
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
       });
 
+      if (response.status === 401) {
+        // Token expirado, limpiar y reintentar
+        this.clearToken();
+        return this.getGPSCount(placa);
+      }
+
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
 
-      // Retornar cantidad de registros GPS (ajustar según estructura real del API)
-      return data.count || data.total || (Array.isArray(data) ? data.length : 0);
+      // El API retorna array de objetos GPS
+      // Cada objeto representa un registro de posición
+      const count = Array.isArray(data) ? data.length : 0;
+
+      console.log(`GPS para ${placa}: ${count} registros`);
+      return count;
     } catch (error) {
       console.error(`Error obteniendo GPS para ${placa}:`, error);
-      // En ambiente de desarrollo, retornar datos simulados
+      // En ambiente de desarrollo, retornar datos simulados si API falla
       if (this.isDevelopment()) {
         return Math.floor(Math.random() * 100) + 50;
       }
       throw error;
     }
-  }
-
-  /**
-   * Obtiene token de autenticación
-   * @returns {string}
-   */
-  getAuthToken() {
-    // TODO: Implementar obtención real del token
-    // Por ahora usar token dummy o del localStorage
-    const session = artimoAuth.getSession();
-    if (session && artimoAuth.isSSO()) {
-      return localStorage.getItem(artimoAuth.ssoTokenKey) || 'dummy-token';
-    }
-    return 'dummy-token';
   }
 
   /**
@@ -284,8 +360,7 @@ class TDMMonitor {
     const ultimoRecord = this.data[this.data.length - 1];
     if (!ultimoRecord) return;
 
-    for (const vehiculo of this.vehiculos) {
-      const vData = ultimoRecord.vehiculos[vehiculo.id];
+    for (const [label, vData] of Object.entries(ultimoRecord.vehiculos)) {
       const row = document.createElement('tr');
 
       const status = vData.error
@@ -293,7 +368,7 @@ class TDMMonitor {
         : '<span class="status-badge active">Activo</span>';
 
       row.innerHTML = `
-        <td><strong>${vehiculo.label}</strong></td>
+        <td><strong>${label}</strong></td>
         <td class="syrus-col">${vData.syrus.toLocaleString()}</td>
         <td class="anterior-col">${vData.anterior.toLocaleString()}</td>
         <td class="diff-col">${vData.diferencia.toLocaleString()}</td>
@@ -523,6 +598,9 @@ class TDMMonitor {
   destroy() {
     if (this.pollTimeout) {
       clearTimeout(this.pollTimeout);
+    }
+    if (this.tokenRefreshInterval) {
+      clearInterval(this.tokenRefreshInterval);
     }
   }
 }

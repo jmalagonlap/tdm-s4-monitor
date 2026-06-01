@@ -4,26 +4,27 @@
  */
 
 const CONFIG = {
-  // API ÁRTIMO
-  API_BASE_URL: window.ENV_ARTIMO_API_URL || 'https://api.artimo.co',
-  API_ENDPOINT: '/gps/latest',
-  API_TOKEN: window.ENV_ARTIMO_API_TOKEN || 'development-token',
+  // API ÁRTIMO — Base URL hardcodeada
+  API_BASE_URL: 'https://api.artimo.com.co',
+  API_ENDPOINT: '/rtdata/gpsv2/latest',
+  API_TOKENS_ENDPOINT: '/tokens',
 
   // Polling
   POLL_INTERVAL: 60000, // 1 minuto
+  TOKEN_REFRESH_INTERVAL: 110 * 60 * 1000, // 110 minutos (token válido por 120 min)
 
   // Credenciales por defecto (para desarrollo)
   DEFAULT_USERS: {
     'artimo': window.ENV_ARTIMO_PASSWORD || 'Artimo2026!',
   },
 
-  // Vehículos monitoreados
+  // Vehículos monitoreados (prefijo CO_ para Colombia)
   VEHICLES: [
-    { id: 'LKN501', label: 'Vehículo 1' },
-    { id: 'JYX434', label: 'Vehículo 2' },
-    { id: 'STE582', label: 'Vehículo 3' },
-    { id: 'STE577', label: 'Vehículo 4' },
-    { id: 'STE060', label: 'Vehículo 5' },
+    { id: 'CO_LKN501', idSyrus: 'CO_1LKN501', label: 'Vehículo 1' },
+    { id: 'CO_JYX434', idSyrus: 'CO_1JYX434', label: 'Vehículo 2' },
+    { id: 'CO_STE582', idSyrus: 'CO_1STE582', label: 'Vehículo 3' },
+    { id: 'CO_STE577', idSyrus: 'CO_1STE577', label: 'Vehículo 4' },
+    { id: 'CO_STE060', idSyrus: 'CO_1STE060', label: 'Vehículo 5' },
   ],
 
   // Almacenamiento

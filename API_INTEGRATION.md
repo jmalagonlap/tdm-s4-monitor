@@ -2,15 +2,15 @@
 
 ## 📡 API ÁRTIMO GPS Latest
 
-El dashboard hace peticiones periodicas al endpoint GPS Latest del API ÁRTIMO.
+El dashboard hace peticiones periódicas al endpoint GPS Latest del API ÁRTIMO.
 
 ### Endpoint Actual (Basado en Documentación)
 
 ```
-GET /gps/latest?plate={placa}
+GET /rtdata/gpsv2/latest?Plates={placa}
 ```
 
-**Base URL**: `https://api.artimo.co` (configurable en VERCEL env vars)
+**Base URL**: `https://api.artimo.com.co` (hardcodeada en config.js)
 
 ### Headers Requeridos
 

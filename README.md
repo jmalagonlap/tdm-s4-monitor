@@ -67,14 +67,13 @@ La contraseña se actualiza cuando subes los secrets a Vercel.
 
 ## 🌐 Variables de Entorno (Vercel)
 
-Configura en Vercel Environment Variables:
+Solo se requiere configurar la contraseña en Vercel Environment Variables:
 
 ```env
-ARTIMO_API_URL=https://api.artimo.co
-ARTIMO_API_TOKEN=tu-token-aqui
-ARTIMO_USERNAME=artimo
 ARTIMO_PASSWORD=Artimo2026!
 ```
+
+**Nota:** La URL del API (`https://api.artimo.com.co`) está hardcodeada en `config.js` y no requiere configuración.
 
 ## 📊 API Integration
 

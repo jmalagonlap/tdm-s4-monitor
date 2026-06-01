@@ -25,16 +25,13 @@ El proyecto está completamente listo para production en Vercel:
 
 ### 2. Configurar Environment Variables
 
-En Vercel, ve a **Settings → Environment Variables** y agrega:
+En Vercel, ve a **Settings → Environment Variables** y agrega solo:
 
 ```
-ARTIMO_API_URL = https://api.artimo.co
-ARTIMO_API_TOKEN = [TU-TOKEN-AQUI]
-ARTIMO_USERNAME = artimo
 ARTIMO_PASSWORD = Artimo2026!
 ```
 
-> **⚠️ IMPORTANTE**: El token `ARTIMO_API_TOKEN` debe ser válido del API ÁRTIMO.
+> **Nota**: La URL del API (`https://api.artimo.com.co`) está hardcodeada en el código y no requiere configuración. El token se obtiene automáticamente usando las credenciales de login.
 
 ### 3. Deploy
 
