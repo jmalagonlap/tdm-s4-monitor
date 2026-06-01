@@ -4,6 +4,8 @@ on:
   schedule:
     # Ejecutar cada minuto (UTC)
     - cron: '* * * * *'
+    # Resumen diario a las 00:00 UTC
+    - cron: '0 0 * * *'
   workflow_dispatch: # Permitir ejecución manual
 
 jobs:
@@ -22,11 +24,28 @@ jobs:
       - name: Install dependencies
         run: npm install --save-dev
 
+      - name: Determine which script to run
+        id: script
+        run: |
+          # Si es a las 00:00 UTC, ejecutar resumen diario
+          # En otros horarios, ejecutar polling
+          HOUR=$(date -u +%H)
+          if [ "$HOUR" = "00" ]; then
+            echo "script=daily-summary" >> $GITHUB_OUTPUT
+          else
+            echo "script=poll-gps" >> $GITHUB_OUTPUT
+          fi
+
       - name: Poll GPS data from ÁRTIMO API
+        if: steps.script.outputs.script == 'poll-gps'
         env:
           ARTIMO_USERNAME: ${{ secrets.ARTIMO_USERNAME }}
           ARTIMO_PASSWORD: ${{ secrets.ARTIMO_PASSWORD }}
         run: node scripts/poll-gps.js
+
+      - name: Generate daily summary
+        if: steps.script.outputs.script == 'daily-summary'
+        run: node scripts/daily-summary.js
 
       - name: Commit and push data
         run: |

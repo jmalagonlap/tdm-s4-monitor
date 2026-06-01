@@ -57,9 +57,9 @@ async function obtainToken(username, password) {
 }
 
 /**
- * Obtiene cantidad de GPS de una placa
+ * Obtiene posiciones GPS de una placa (con detalles completos)
  */
-async function getGPSCount(placa, token) {
+async function getGPSData(placa, token) {
   try {
     const url = new URL(`${API_BASE_URL}${API_GPS_ENDPOINT}`);
     url.searchParams.append('Plates', placa);
@@ -77,13 +77,53 @@ async function getGPSCount(placa, token) {
     }
 
     const data = await response.json();
-    const count = Array.isArray(data) ? data.length : 0;
-
-    return count;
+    return Array.isArray(data) ? data : [];
   } catch (error) {
     console.error(`✗ Error obteniendo GPS para ${placa}:`, error.message);
-    return 0;
+    return [];
   }
+}
+
+/**
+ * Cuenta posiciones GPS nuevas (deduplicadas)
+ * Una posición es "nueva" si es diferente a las vistas antes
+ */
+function countNewGPS(currentData, previousData = {}) {
+  const seenPositions = new Set();
+
+  // Cargar posiciones previas
+  if (previousData.positions && Array.isArray(previousData.positions)) {
+    previousData.positions.forEach(pos => {
+      const key = `${pos.latitude},${pos.longitude},${pos.date}`;
+      seenPositions.add(key);
+    });
+  }
+
+  // Contar posiciones nuevas
+  let newCount = 0;
+  const newPositions = [];
+
+  for (const record of currentData) {
+    const key = `${record.latitude},${record.longitude},${record.date}`;
+
+    if (!seenPositions.has(key)) {
+      seenPositions.add(key);
+      newCount++;
+      newPositions.push({
+        date: record.date,
+        latitude: record.latitude,
+        longitude: record.longitude,
+        speed: record.speed,
+        timestamp: record.timeStamp, // Hora de llegada a plataforma
+      });
+    }
+  }
+
+  return {
+    newCount,
+    totalCount: currentData.length,
+    positions: newPositions,
+  };
 }
 
 /**
@@ -148,30 +188,53 @@ async function main() {
     let mixfmTotal = 0;
     const vehicleData = {};
 
+    // Cargar datos previos para detectar duplicados
+    const allData = loadExistingData();
+    const previousData = allData.records.length > 0 ? allData.records[allData.records.length - 1] : null;
+
     for (const vehiculo of VEHICLES) {
       try {
-        const syrusGPS = await getGPSCount(vehiculo.idSyrus, token);
-        const mixfmGPS = await getGPSCount(vehiculo.id, token);
+        // Obtener datos completos
+        const syrusRawData = await getGPSData(vehiculo.idSyrus, token);
+        const mixfmRawData = await getGPSData(vehiculo.id, token);
+
+        // Contar posiciones nuevas (deduplicadas)
+        const syrusGPSResult = countNewGPS(
+          syrusRawData,
+          previousData?.vehiculos?.[vehiculo.label]?.syrus || {}
+        );
+        const mixfmGPSResult = countNewGPS(
+          mixfmRawData,
+          previousData?.vehiculos?.[vehiculo.label]?.mixfm || {}
+        );
 
         vehicleData[vehiculo.label] = {
           placaSyrus: vehiculo.idSyrus,
           placaMixFM: vehiculo.id,
-          syrus: syrusGPS,
-          mixfm: mixfmGPS,
-          diferencia: syrusGPS - mixfmGPS,
+          syrus: {
+            newPositions: syrusGPSResult.newCount,
+            totalPositions: syrusGPSResult.totalCount,
+            positions: syrusGPSResult.positions,
+          },
+          mixfm: {
+            newPositions: mixfmGPSResult.newCount,
+            totalPositions: mixfmGPSResult.totalCount,
+            positions: mixfmGPSResult.positions,
+          },
+          diferencia: syrusGPSResult.newCount - mixfmGPSResult.newCount,
         };
 
-        syrusTotal += syrusGPS;
-        mixfmTotal += mixfmGPS;
+        syrusTotal += syrusGPSResult.newCount;
+        mixfmTotal += mixfmGPSResult.newCount;
 
-        console.log(`✓ ${vehiculo.label}: Syrus4G=${syrusGPS}, Mix FM=${mixfmGPS}`);
+        console.log(`✓ ${vehiculo.label}: Syrus4G=${syrusGPSResult.newCount} nuevas (${syrusGPSResult.totalCount} total), Mix FM=${mixfmGPSResult.newCount} nuevas (${mixfmGPSResult.totalCount} total)`);
       } catch (error) {
         console.error(`✗ Error con ${vehiculo.label}:`, error.message);
         vehicleData[vehiculo.label] = {
           placaSyrus: vehiculo.idSyrus,
           placaMixFM: vehiculo.id,
-          syrus: 0,
-          mixfm: 0,
+          syrus: { newPositions: 0, totalPositions: 0, positions: [] },
+          mixfm: { newPositions: 0, totalPositions: 0, positions: [] },
           diferencia: 0,
           error: true,
         };

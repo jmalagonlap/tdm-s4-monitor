@@ -6,7 +6,9 @@
 class DataLoader {
   constructor() {
     this.dataUrl = 'https://raw.githubusercontent.com/jmalagonlap/tdm-s4-monitor/main/data/gps-data.json';
+    this.dailySummaryUrl = 'https://raw.githubusercontent.com/jmalagonlap/tdm-s4-monitor/main/data/daily-summary.json';
     this.localStorageKey = 'tdm_s4_cache';
+    this.dailySummaryKey = 'tdm_s4_daily_summary';
     this.cacheExpiry = 60 * 1000; // 1 minuto
   }
 
@@ -97,6 +99,51 @@ class DataLoader {
       diferencia: record.diferencia,
       vehiculos: record.vehiculos,
     }));
+  }
+
+  /**
+   * Obtiene resumen diario desde GitHub
+   */
+  async getDailySummary() {
+    try {
+      const response = await fetch(this.dailySummaryUrl);
+
+      if (!response.ok) {
+        console.warn(`Daily summary not found on GitHub (${response.status})`);
+        return this.getDailySummaryFromCache();
+      }
+
+      const data = await response.json();
+
+      // Guardar en localStorage para caché
+      localStorage.setItem(this.dailySummaryKey, JSON.stringify({
+        data,
+        timestamp: Date.now(),
+      }));
+
+      console.log(`✓ Resumen diario cargado desde GitHub (${data.days?.length || 0} días)`);
+      return data;
+    } catch (error) {
+      console.warn('Error cargando resumen diario:', error.message);
+      return this.getDailySummaryFromCache();
+    }
+  }
+
+  /**
+   * Obtiene resumen diario del caché local
+   */
+  getDailySummaryFromCache() {
+    try {
+      const cached = localStorage.getItem(this.dailySummaryKey);
+      if (!cached) return { days: [] };
+
+      const { data } = JSON.parse(cached);
+      console.log(`✓ Usando caché local de resumen (${data.days?.length || 0} días)`);
+      return data;
+    } catch (error) {
+      console.warn('Error leyendo caché de resumen:', error.message);
+      return { days: [] };
+    }
   }
 }
 
