@@ -250,9 +250,9 @@ async function main() {
       vehiculos: vehicleData,
     };
 
-    // Cargar datos existentes y agregar nuevo registro
+    // Cargar datos existentes actualizados y agregar nuevo registro
     console.log('\n💾 Guardando datos...');
-    const allData = loadExistingData();
+    allData = loadExistingData();
     allData.records.push(record);
 
     // Mantener solo los últimos 1440 registros (24 horas con polling cada minuto)
