@@ -57,14 +57,12 @@ async function obtainToken(username, password) {
 }
 
 /**
- * Obtiene posiciones GPS de una placa (con detalles completos)
+ * Obtiene TODAS las posiciones GPS (1 solo llamado)
+ * Retorna un mapa de placa → posiciones
  */
-async function getGPSData(placa, token) {
+async function getAllGPSData(token) {
   try {
-    const url = new URL(`${API_BASE_URL}${API_GPS_ENDPOINT}`);
-    url.searchParams.append('Plates', placa);
-
-    const response = await fetch(url.toString(), {
+    const response = await fetch(`${API_BASE_URL}${API_GPS_ENDPOINT}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -77,11 +75,32 @@ async function getGPSData(placa, token) {
     }
 
     const data = await response.json();
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) {
+      return {};
+    }
+
+    // Agrupar por placa
+    const gpsMap = {};
+    for (const record of data) {
+      const plate = record.machineName; // Nombre de la placa
+      if (!gpsMap[plate]) {
+        gpsMap[plate] = [];
+      }
+      gpsMap[plate].push(record);
+    }
+
+    return gpsMap;
   } catch (error) {
-    console.error(`✗ Error obteniendo GPS para ${placa}:`, error.message);
-    return [];
+    console.error(`✗ Error obteniendo GPS:`, error.message);
+    return {};
   }
+}
+
+/**
+ * Obtiene datos filtrados para una placa específica
+ */
+function getFilteredGPSData(gpsMap, placa) {
+  return gpsMap[placa] || [];
 }
 
 /**
@@ -181,12 +200,15 @@ async function main() {
     console.log('🔐 Obteniendo token de autenticación...');
     const token = await obtainToken(username, password);
 
-    // Hacer polling de cada vehículo
-    console.log('\n📡 Obteniendo GPS de vehículos...');
+    // Hacer polling - UN SOLO LLAMADO al API
+    console.log('\n📡 Obteniendo GPS (1 llamado para todos los vehículos)...');
     const timestamp = new Date();
     let syrusTotal = 0;
     let mixfmTotal = 0;
     const vehicleData = {};
+
+    // Obtener TODOS los GPS en UN SOLO llamado
+    const gpsMap = await getAllGPSData(token);
 
     // Cargar datos previos para detectar duplicados
     const allData = loadExistingData();
@@ -194,9 +216,9 @@ async function main() {
 
     for (const vehiculo of VEHICLES) {
       try {
-        // Obtener datos completos
-        const syrusRawData = await getGPSData(vehiculo.idSyrus, token);
-        const mixfmRawData = await getGPSData(vehiculo.id, token);
+        // Obtener datos filtrados para este vehículo
+        const syrusRawData = getFilteredGPSData(gpsMap, vehiculo.idSyrus);
+        const mixfmRawData = getFilteredGPSData(gpsMap, vehiculo.id);
 
         // Contar posiciones nuevas (deduplicadas)
         const syrusGPSResult = countNewGPS(
