@@ -172,8 +172,14 @@ function saveData(data) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
 
+    // Guardar en data/gps-data.json (histórico)
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     console.log(`✓ Datos guardados en ${DATA_FILE}`);
+
+    // Guardar también en raíz (gps-data.json) para que Vercel lo sirva como estático
+    const rootDataFile = path.join(__dirname, '..', 'gps-data.json');
+    fs.writeFileSync(rootDataFile, JSON.stringify(data, null, 2));
+    console.log(`✓ Datos guardados en ${rootDataFile} (Vercel)`);
   } catch (error) {
     console.error('✗ Error guardando datos:', error.message);
     throw error;
