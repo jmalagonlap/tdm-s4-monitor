@@ -10,7 +10,8 @@ class TDMMonitor {
     this.updateInterval = 60 * 1000; // 60 segundos
     this.updateTimer = null;
     this.chart = null;
-    this.dataUrl = 'https://raw.githubusercontent.com/jmalagonlap/tdm-s4-monitor/main/data/gps-data.json';
+    // Usar jsDelivr CDN (más rápido y confiable que GitHub raw)
+    this.dataUrl = 'https://cdn.jsdelivr.net/gh/jmalagonlap/tdm-s4-monitor@main/data/gps-data.json';
   }
 
   async init() {
