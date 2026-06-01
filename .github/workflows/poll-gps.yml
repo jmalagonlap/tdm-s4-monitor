@@ -57,8 +57,8 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          # Agregar solo archivos que existen
-          git add data/gps-data.json 2>/dev/null || true
+          # Agregar archivos de datos (histórico en data/ y archivo raíz para Vercel)
+          git add data/gps-data.json gps-data.json 2>/dev/null || true
 
           # Commit y push (sin verificar cambios, solo commitea si hay algo)
           if git commit -m "Update GPS data from ÁRTIMO API [skip ci]" 2>/dev/null; then
