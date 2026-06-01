@@ -117,34 +117,39 @@
         </div>
       </section>
 
-      <!-- Vehicle Comparison Table -->
-      <section class="vehicles-section">
-        <h2>Comparativa por Vehículo — Acumulado Hoy</h2>
-        <div class="table-responsive">
-          <table class="comparison-table">
-            <thead>
-              <tr>
-                <th>Placa</th>
-                <th class="syrus-col">Syrus4G (hoy)</th>
-                <th class="mixfm-col">Mix FM (hoy)</th>
-                <th class="diff-col">Diferencia</th>
-                <th class="status-col">Estado</th>
-              </tr>
-            </thead>
-            <tbody id="vehiclesTableBody">
-              <!-- Generado dinámicamente por JavaScript -->
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <!-- Fila central: tabla vehículos + gráfica diaria -->
+      <div class="middle-row">
 
-      <!-- Historical Chart -->
-      <section class="chart-section">
-        <h2>Histórico Diario — Posiciones por Día</h2>
-        <div id="chartContainer" class="chart-container">
-          <canvas id="comparisonChart"></canvas>
-        </div>
-      </section>
+        <!-- Vehicle Comparison Table -->
+        <section class="vehicles-section">
+          <h2>Comparativa por Vehículo — Hoy</h2>
+          <div class="table-responsive">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th class="syrus-col">Syrus4G</th>
+                  <th class="mixfm-col">Mix FM</th>
+                  <th class="diff-col">Dif.</th>
+                  <th class="status-col">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="vehiclesTableBody">
+                <!-- Generado dinámicamente por JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Historical Chart -->
+        <section class="chart-section">
+          <h2>Histórico Diario — Posiciones por Día</h2>
+          <div id="chartContainer" class="chart-container">
+            <canvas id="comparisonChart"></canvas>
+          </div>
+        </section>
+
+      </div><!-- /.middle-row -->
 
       <!-- Data Table -->
       <section class="data-section">
