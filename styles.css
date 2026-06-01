@@ -45,115 +45,106 @@ html, body {
 }
 
 /* ═════════════════════════════════════════════════════════════
-   LOGIN OVERLAY
+   LOGIN — Estilo ÁRTIMO HUB
    ═════════════════════════════════════════════════════════════ */
 
-.login-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+#login-screen {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: #F5F6F8;
 }
 
-.login-container {
-  background: var(--artimo-blanco);
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  padding: 40px;
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-}
-
-.logo-login {
-  width: 120px;
-  height: auto;
-  margin-bottom: 20px;
-}
-
-.login-container h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--artimo-rojo-oscuro);
-  margin-bottom: 8px;
-}
-
-.login-container p {
-  font-size: 14px;
-  color: var(--artimo-gris);
-  margin-bottom: 30px;
-}
-
-.login-form .form-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.login-form label {
-  display: block;
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--artimo-negro);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.login-form input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
+.login-card {
+  width: 100%; max-width: 376px; margin: 16px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.13);
+  border-top: 3px solid var(--artimo-rojo-vivo);
   border-radius: 4px;
-  font-family: 'Open Sans', Arial, sans-serif;
-  font-size: 14px;
-  transition: border-color 0.3s;
+  padding: 48px 40px 40px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  animation: card-in 320ms cubic-bezier(0.23,1,0.32,1) both;
 }
 
-.login-form input:focus {
-  outline: none;
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  .login-card { padding: 36px 24px 32px; }
+}
+
+.brand-block { text-align: center; margin-bottom: 36px; }
+.brand-img   { height: 88px; width: auto; display: block; margin: 0 auto 12px; }
+.brand-sub {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: #8A8A89;
+}
+
+.lf-field       { margin-bottom: 16px; }
+.lf-field label {
+  display: block; margin-bottom: 6px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: #8A8A89;
+}
+
+.lf-wrap { position: relative; }
+
+.lf-ico {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: #8A8A89;
+  pointer-events: none; transition: color 150ms;
+}
+.lf-wrap:focus-within .lf-ico { color: var(--artimo-rojo-vivo); }
+
+.lf-input {
+  width: 100%; padding: 11px 11px 11px 36px;
+  background: #F5F6F8; border: 1px solid rgba(0,0,0,0.13);
+  border-radius: 4px; color: #1A1A1A;
+  font-family: 'Open Sans', Arial, sans-serif; font-size: 14px; outline: none;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.lf-input::placeholder { color: #8A8A89; }
+.lf-input:focus {
   border-color: var(--artimo-rojo-vivo);
-  box-shadow: 0 0 0 3px rgba(225, 11, 23, 0.1);
+  box-shadow: 0 0 0 3px rgba(225,11,23,0.08);
 }
 
-.btn-login {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--artimo-rojo-vivo);
-  color: var(--artimo-blanco);
-  border: none;
-  border-radius: 4px;
-  font-weight: 700;
-  font-size: 14px;
+.lf-eye {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: 0;
+  color: #8A8A89; line-height: 0; transition: color 150ms;
+}
+.lf-eye:hover { color: var(--artimo-rojo-vivo); }
+.lf-eye svg   { width: 15px; height: 15px; }
+
+.lf-btn {
+  width: 100%; margin-top: 24px; padding: 13px;
+  background: var(--artimo-rojo-vivo); border: none; border-radius: 4px;
+  color: #fff; font-family: 'Open Sans', Arial, sans-serif;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
   cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: background-color 0.3s, transform 0.1s;
-  margin-top: 20px;
+  transition: opacity 150ms, transform 150ms cubic-bezier(0.23,1,0.32,1);
 }
-
-.btn-login:hover {
-  background-color: var(--artimo-rojo-oscuro);
+@media (hover: hover) and (pointer: fine) {
+  .lf-btn:hover { opacity: 0.88; }
 }
+.lf-btn:active { transform: scale(0.97); }
 
-.btn-login:active {
-  transform: scale(0.98);
+.lf-err {
+  display: none; margin-top: 10px; padding: 8px 12px;
+  background: rgba(225,11,23,0.05); border: 1px solid rgba(225,11,23,0.22);
+  border-radius: 4px; color: #C00;
+  font-size: 12px; font-weight: 600; text-align: center;
 }
+.lf-err.show { display: block; }
 
-.login-error {
-  color: var(--error-color);
-  font-size: 12px;
-  margin-top: 10px;
-  display: none;
-}
-
-.login-error.show {
-  display: block;
+.lf-foot {
+  text-align: center; margin-top: 22px;
+  font-size: 10px; color: #8A8A89; letter-spacing: .06em;
 }
 
 /* ═════════════════════════════════════════════════════════════

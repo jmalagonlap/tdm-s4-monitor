@@ -1,8 +1,74 @@
 /**
  * TDM S4 Monitor - Dashboard v3
  * Carga datos desde Vercel (guardados por workflow de GitHub Actions)
- * Muestra acumulados diarios, totales históricos y desglose por placa
+ * Login idéntico al ÁRTIMO HUB · Acumulados diarios y totales históricos
  */
+
+// ─── Autenticación (mismo esquema que ÁRTIMO HUB) ─────────────────────────────
+
+const CREDS = [
+  { user: 'artimo',   pass: 'Artimo2026!' },
+  { user: 'jmalagon', pass: 'Artimo2026!' },
+  { user: 'tdm',      pass: 'Artimo2026!' },
+];
+const SESSION_KEY = 'artimo_tdm_session';
+const SESSION_TTL = 8 * 60 * 60 * 1000; // 8 horas
+
+function doLogin() {
+  const u = document.getElementById('lu').value.trim();
+  const p = document.getElementById('lp').value;
+
+  if (CREDS.some(c => c.user === u && c.pass === p)) {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ user: u, ts: Date.now() }));
+    const ls = document.getElementById('login-screen');
+    ls.style.transition = 'opacity 260ms ease-out';
+    ls.style.opacity = '0';
+    setTimeout(() => {
+      ls.style.display = 'none';
+      showDashboard();
+    }, 250);
+  } else {
+    const err = document.getElementById('lf-err');
+    err.classList.add('show');
+    setTimeout(() => err.classList.remove('show'), 3000);
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem(SESSION_KEY);
+  const dash = document.getElementById('dashboardContainer');
+  dash.style.display = 'none';
+  const ls = document.getElementById('login-screen');
+  ls.style.opacity = '0';
+  ls.style.display = 'flex';
+  requestAnimationFrame(() => {
+    ls.style.transition = 'opacity 220ms ease-out';
+    ls.style.opacity = '1';
+  });
+  document.getElementById('lu').value = '';
+  document.getElementById('lp').value = '';
+}
+
+function togglePwd() {
+  const el = document.getElementById('lp');
+  const show = el.type === 'password';
+  el.type = show ? 'text' : 'password';
+  document.getElementById('eye-svg').innerHTML = show
+    ? `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
+    : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+}
+
+function showDashboard() {
+  const dash = document.getElementById('dashboardContainer');
+  dash.style.display = 'flex';
+  // Arrancar el monitor si aún no está corriendo
+  if (!window._monitor) {
+    window._monitor = new TDMMonitor();
+    window._monitor.init();
+  }
+}
+
+// ─── Monitor ──────────────────────────────────────────────────────────────────
 
 class TDMMonitor {
   constructor() {
@@ -14,11 +80,7 @@ class TDMMonitor {
   }
 
   async init() {
-    console.log('📡 Inicializando TDM S4 Monitor v3...');
-
-    // Mostrar dashboard directamente (sin login)
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('dashboardContainer').style.display = 'block';
+    console.log('📡 TDM S4 Monitor v3 listo');
 
     await this.updateData();
 
@@ -29,9 +91,7 @@ class TDMMonitor {
 
     document.getElementById('clearDataBtn')?.addEventListener('click', () => this.clearData());
     document.getElementById('exportDataBtn')?.addEventListener('click', () => this.exportData());
-    document.getElementById('logoutBtn')?.addEventListener('click', () => location.reload());
-
-    console.log('✓ Dashboard listo');
+    document.getElementById('logoutBtn')?.addEventListener('click', () => doLogout());
   }
 
   // ─── Datos desde Vercel ───────────────────────────────────────────────────
@@ -422,9 +482,33 @@ class TDMMonitor {
   }
 }
 
-// Inicializar cuando el DOM esté listo
+// ─── Arranque ─────────────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', () => {
-  const monitor = new TDMMonitor();
-  monitor.init();
-  window.addEventListener('beforeunload', () => monitor.destroy());
+  // Eventos del login
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('eye-btn').addEventListener('click', togglePwd);
+  document.getElementById('lu').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('lp').focus();
+  });
+  document.getElementById('lp').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  // ¿Sesión activa? → ir directo al dashboard
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY));
+    if (s && (Date.now() - s.ts) < SESSION_TTL) {
+      document.getElementById('login-screen').style.display = 'none';
+      showDashboard();
+      return;
+    }
+  } catch {}
+
+  // Si no hay sesión, mostrar login
+  document.getElementById('login-screen').style.display = 'flex';
+
+  window.addEventListener('beforeunload', () => {
+    if (window._monitor) window._monitor.destroy();
+  });
 });

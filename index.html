@@ -21,32 +21,41 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Login Overlay (SSO ÁRTIMO) -->
-  <div id="loginOverlay" class="login-overlay" style="display: none;">
-    <div class="login-container">
-      <img src="logoartimogrande.jpg" alt="ÁRTIMO" class="logo-login">
-      <h1>TDM S4 Monitor</h1>
-      <p>Comparativa de Telemetrías Syrus4G vs Mix FM</p>
-
-      <div class="login-form">
-        <div class="form-group">
-          <label for="username">Usuario</label>
-          <input type="text" id="username" placeholder="Ingresa tu usuario">
-        </div>
-
-        <div class="form-group">
-          <label for="password">Contraseña</label>
-          <input type="password" id="password" placeholder="Ingresa tu contraseña">
-        </div>
-
-        <button id="loginBtn" class="btn-login">Ingresar</button>
-        <p id="loginError" class="login-error"></p>
+  <!-- LOGIN — Estilo ÁRTIMO HUB -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="brand-block">
+        <img src="logoartimogrande.jpg" class="brand-img" alt="ÁRTIMO"/>
+        <div class="brand-sub">TDM S4 Monitor · Comparativa Telemetría</div>
       </div>
+
+      <div class="lf-field">
+        <label for="lu">Usuario</label>
+        <div class="lf-wrap">
+          <svg class="lf-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <input id="lu" class="lf-input" type="text" placeholder="usuario" autocomplete="username" autocapitalize="none" spellcheck="false"/>
+        </div>
+      </div>
+
+      <div class="lf-field">
+        <label for="lp">Contraseña</label>
+        <div class="lf-wrap">
+          <svg class="lf-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input id="lp" class="lf-input" type="password" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="lf-eye" id="eye-btn" type="button" aria-label="Mostrar contraseña">
+            <svg id="eye-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="lf-btn" id="login-btn" type="button">Ingresar al sistema</button>
+      <div id="lf-err" class="lf-err">Usuario o contraseña incorrectos</div>
+      <div class="lf-foot">Ártimo SaaS Telematics · Bogotá, Colombia</div>
     </div>
   </div>
 
   <!-- Main Dashboard -->
-  <div id="dashboardContainer" style="display: none;">
+  <div id="dashboardContainer" style="display:none; flex-direction:column; min-height:100vh;">
     <!-- Header -->
     <header class="header">
       <div class="header-left">
