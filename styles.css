@@ -336,6 +336,55 @@ html, body {
   margin: 0;
 }
 
+.stat-total {
+  font-size: 11px;
+  color: #999;
+  margin: 4px 0 0 0;
+}
+
+.stat-total span {
+  font-weight: 600;
+  color: var(--artimo-gris);
+}
+
+/* Placa sub-label en tabla vehículos */
+.plate-sub {
+  display: block;
+  font-size: 11px;
+  color: #999;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* Diferencias positivas / negativas */
+.positive {
+  color: #2E7D32;
+  font-weight: 600;
+}
+
+.negative {
+  color: #C62828;
+  font-weight: 600;
+}
+
+/* Separador entre grupos de registros en tabla */
+.row-separator td {
+  padding: 2px 0 !important;
+  background: #f0f0f0 !important;
+  border: none !important;
+}
+
+/* Celda timestamp con rowspan */
+.timestamp-cell {
+  font-size: 12px;
+  color: var(--artimo-gris);
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+  background: #fafafa;
+  border-right: 2px solid #eee !important;
+}
+
 /* ═════════════════════════════════════════════════════════════
    SECTIONS
    ═════════════════════════════════════════════════════════════ */

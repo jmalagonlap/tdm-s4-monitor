@@ -74,7 +74,8 @@
           <div class="stat-content">
             <h3>Syrus4G</h3>
             <div class="stat-number" id="syrusTotal">0</div>
-            <p class="stat-label">GPS Recibidos</p>
+            <p class="stat-label">Posiciones hoy</p>
+            <p class="stat-total">Total: <span id="syrusTotalAll">0</span></p>
           </div>
         </div>
 
@@ -83,16 +84,17 @@
           <div class="stat-content">
             <h3>Mix FM</h3>
             <div class="stat-number" id="mixfmTotal">0</div>
-            <p class="stat-label">GPS Recibidos</p>
+            <p class="stat-label">Posiciones hoy</p>
+            <p class="stat-total">Total: <span id="mixfmTotalAll">0</span></p>
           </div>
         </div>
 
         <div class="stat-card">
           <div class="stat-icon comparison">⚖️</div>
           <div class="stat-content">
-            <h3>Diferencia</h3>
+            <h3>Diferencia hoy</h3>
             <div class="stat-number" id="diferencia">0</div>
-            <p class="stat-label">GPS de Diferencia</p>
+            <p class="stat-label">Syrus4G − Mix FM</p>
           </div>
         </div>
 
@@ -108,14 +110,14 @@
 
       <!-- Vehicle Comparison Table -->
       <section class="vehicles-section">
-        <h2>Comparativa por Vehículo</h2>
+        <h2>Comparativa por Vehículo — Acumulado Hoy</h2>
         <div class="table-responsive">
           <table class="comparison-table">
             <thead>
               <tr>
-                <th>Vehículo</th>
-                <th class="syrus-col">Syrus4G (1XXXX)</th>
-                <th class="mixfm-col">Mix FM (XXXX)</th>
+                <th>Placa</th>
+                <th class="syrus-col">Syrus4G (hoy)</th>
+                <th class="mixfm-col">Mix FM (hoy)</th>
                 <th class="diff-col">Diferencia</th>
                 <th class="status-col">Estado</th>
               </tr>
@@ -129,7 +131,7 @@
 
       <!-- Historical Chart -->
       <section class="chart-section">
-        <h2>Histórico de GPS - Syrus4G vs Mix FM (últimas 24h)</h2>
+        <h2>Histórico Diario — Posiciones por Día</h2>
         <div id="chartContainer" class="chart-container">
           <canvas id="comparisonChart"></canvas>
         </div>
@@ -146,10 +148,11 @@
           <table class="data-table">
             <thead>
               <tr>
-                <th>Timestamp</th>
-                <th>Syrus4G Total</th>
-                <th>Mix FM Total</th>
-                <th>Diferencia</th>
+                <th>Fecha / Hora</th>
+                <th>Placa</th>
+                <th class="syrus-col">Syrus4G</th>
+                <th class="mixfm-col">Mix FM</th>
+                <th class="diff-col">Diferencia</th>
               </tr>
             </thead>
             <tbody id="dataTableBody">
