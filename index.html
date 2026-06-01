@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TDM S4 Monitor - Comparativa Telemetría</title>
+
+  <!-- Tipografía ÁRTIMO -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;600;700&display=swap" rel="stylesheet">
+
+  <!-- Configuración -->
+  <script src="config.js"></script>
+
+  <!-- Autenticación ÁRTIMO -->
+  <script src="artimo-auth.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Login Overlay (SSO ÁRTIMO) -->
+  <div id="loginOverlay" class="login-overlay" style="display: none;">
+    <div class="login-container">
+      <img src="logoartimogrande.jpg" alt="ÁRTIMO" class="logo-login">
+      <h1>TDM S4 Monitor</h1>
+      <p>Comparativa de Telemetrías Syrus4G vs Anterior</p>
+
+      <div class="login-form">
+        <div class="form-group">
+          <label for="username">Usuario</label>
+          <input type="text" id="username" placeholder="Ingresa tu usuario">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" placeholder="Ingresa tu contraseña">
+        </div>
+
+        <button id="loginBtn" class="btn-login">Ingresar</button>
+        <p id="loginError" class="login-error"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="dashboardContainer" style="display: none;">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <img src="logoartimogrande.jpg" alt="ÁRTIMO" class="logo-header">
+        <div>
+          <h1>TDM S4 Monitor</h1>
+          <p class="subtitle">Comparativa Telemetría Syrus4G vs Anterior</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status">
+          <span class="status-label">Estado:</span>
+          <span id="statusText" class="status-value">Inicializando...</span>
+        </div>
+        <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Stats Cards -->
+      <section class="stats-section">
+        <div class="stat-card">
+          <div class="stat-icon syrus">📡</div>
+          <div class="stat-content">
+            <h3>Syrus4G</h3>
+            <div class="stat-number" id="syrusTotal">0</div>
+            <p class="stat-label">GPS Recibidos</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon anterior">📍</div>
+          <div class="stat-content">
+            <h3>Anterior</h3>
+            <div class="stat-number" id="anteriorTotal">0</div>
+            <p class="stat-label">GPS Recibidos</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon comparison">⚖️</div>
+          <div class="stat-content">
+            <h3>Diferencia</h3>
+            <div class="stat-number" id="diferencia">0</div>
+            <p class="stat-label">GPS de Diferencia</p>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon tiempo">⏱️</div>
+          <div class="stat-content">
+            <h3>Última Actualización</h3>
+            <div class="stat-time" id="lastUpdate">--:--:--</div>
+            <p class="stat-label">Próxima en 60s</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vehicle Comparison Table -->
+      <section class="vehicles-section">
+        <h2>Comparativa por Vehículo</h2>
+        <div class="table-responsive">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Vehículo</th>
+                <th class="syrus-col">Syrus4G (1XXXX)</th>
+                <th class="anterior-col">Anterior (XXXX)</th>
+                <th class="diff-col">Diferencia</th>
+                <th class="status-col">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="vehiclesTableBody">
+              <!-- Generado dinámicamente por JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Historical Chart -->
+      <section class="chart-section">
+        <h2>Histórico de GPS (últimas 24h)</h2>
+        <div id="chartContainer" class="chart-container">
+          <canvas id="comparisonChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Data Table -->
+      <section class="data-section">
+        <h2>Registro de Datos</h2>
+        <div class="filters">
+          <button id="clearDataBtn" class="btn-secondary">Limpiar Datos</button>
+          <button id="exportDataBtn" class="btn-secondary">Exportar CSV</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Syrus4G Total</th>
+                <th>Anterior Total</th>
+                <th>Diferencia</th>
+              </tr>
+            </thead>
+            <tbody id="dataTableBody">
+              <!-- Generado dinámicamente por JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  <script src="api-monitor.js"></script>
+</body>
+</html>

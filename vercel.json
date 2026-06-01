@@ -1,0 +1,27 @@
+{
+  "public": true,
+  "env": [
+    {
+      "key": "ARTIMO_API_URL",
+      "description": "URL base del API ÁRTIMO",
+      "example": "https://api.artimo.co"
+    },
+    {
+      "key": "ARTIMO_API_TOKEN",
+      "description": "Token de autenticación para API ÁRTIMO",
+      "example": "your-api-token-here"
+    },
+    {
+      "key": "ARTIMO_USERNAME",
+      "description": "Usuario para autenticación local",
+      "example": "artimo"
+    },
+    {
+      "key": "ARTIMO_PASSWORD",
+      "description": "Contraseña para autenticación local",
+      "example": "Artimo2026!"
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
+}

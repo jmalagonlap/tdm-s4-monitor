@@ -1,0 +1,25 @@
+{
+  "name": "tdm-s4-monitor",
+  "version": "1.0.0",
+  "description": "Dashboard comparativo de telemetrías Syrus4G vs Anterior",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "build": "echo 'No build required - static site'",
+    "start": "python -m http.server 8000"
+  },
+  "keywords": [
+    "artimo",
+    "tdm",
+    "monitor",
+    "telemetry",
+    "dashboard",
+    "syrus4g"
+  ],
+  "author": "ÁRTIMO Development Team",
+  "license": "PROPRIETARY",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {}
+}
