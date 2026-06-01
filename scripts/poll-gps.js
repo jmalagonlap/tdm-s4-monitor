@@ -274,21 +274,21 @@ async function main() {
 
     // Cargar datos existentes actualizados y agregar nuevo registro
     console.log('\n💾 Guardando datos...');
-    allData = loadExistingData();
-    allData.records.push(record);
+    const updatedData = loadExistingData();
+    updatedData.records.push(record);
 
     // Mantener solo los últimos 1440 registros (24 horas con polling cada minuto)
-    if (allData.records.length > 1440) {
-      allData.records = allData.records.slice(-1440);
+    if (updatedData.records.length > 1440) {
+      updatedData.records = updatedData.records.slice(-1440);
     }
 
-    saveData(allData);
+    saveData(updatedData);
 
     console.log('\n📊 Resumen:');
     console.log(`   Syrus4G Total: ${syrusTotal}`);
     console.log(`   Mix FM Total:  ${mixfmTotal}`);
     console.log(`   Diferencia:    ${syrusTotal - mixfmTotal}`);
-    console.log(`   Total registros: ${allData.records.length}`);
+    console.log(`   Total registros: ${updatedData.records.length}`);
 
     console.log('\n✅ Poll completado exitosamente\n');
   } catch (error) {
