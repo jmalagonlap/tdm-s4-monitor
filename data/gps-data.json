@@ -64921,6 +64921,131 @@
           "diferencia": 0
         }
       }
+    },
+    {
+      "timestamp": "2026-06-02T15:32:18.332Z",
+      "syrusTotal": 2,
+      "mixfmTotal": 4,
+      "diferencia": -2,
+      "vehiculos": {
+        "Vehículo 1": {
+          "placaSyrus": "CO_1LKN501",
+          "placaMixFM": "CO_LKN501",
+          "syrus": {
+            "newPositions": 0,
+            "totalPositions": 1,
+            "positions": []
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T15:30:33Z",
+                "latitude": 7.2456278800964355,
+                "longitude": -76.43794250488281,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": -1
+        },
+        "Vehículo 2": {
+          "placaSyrus": "CO_1JYX434",
+          "placaMixFM": "CO_JYX434",
+          "syrus": {
+            "newPositions": 0,
+            "totalPositions": 1,
+            "positions": []
+          },
+          "mixfm": {
+            "newPositions": 0,
+            "totalPositions": 1,
+            "positions": []
+          },
+          "diferencia": 0
+        },
+        "Vehículo 3": {
+          "placaSyrus": "CO_1STE582",
+          "placaMixFM": "CO_STE582",
+          "syrus": {
+            "newPositions": 0,
+            "totalPositions": 1,
+            "positions": []
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T15:32:07Z",
+                "latitude": 6.382607936859131,
+                "longitude": -75.4662094116211,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": -1
+        },
+        "Vehículo 4": {
+          "placaSyrus": "CO_1STE577",
+          "placaMixFM": "CO_STE577",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T15:31:47Z",
+                "latitude": 6.382709980010986,
+                "longitude": -75.46614837646484,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T15:31:59Z",
+                "latitude": 6.382752895355225,
+                "longitude": -75.46617889404297,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "Vehículo 5": {
+          "placaSyrus": "CO_1STE060",
+          "placaMixFM": "CO_STE060",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T15:31:47Z",
+                "latitude": 6.316090106964111,
+                "longitude": -75.54715728759766,
+                "speed": 37
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T15:32:09Z",
+                "latitude": 6.31817102432251,
+                "longitude": -75.5468978881836,
+                "speed": 43
+              }
+            ]
+          },
+          "diferencia": 0
+        }
+      }
     }
   ]
 }
