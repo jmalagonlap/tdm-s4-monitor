@@ -28,34 +28,57 @@ const DATA_DIR = path.join(__dirname, '..', 'data');
 const DATA_FILE = path.join(DATA_DIR, 'gps-data.json');
 
 /**
- * Obtiene token del API ÁRTIMO
+ * Fetch con timeout configurable
  */
-async function obtainToken(username, password) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('password', password);
-    formData.append('grant_type', 'password');
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
-    const response = await fetch(`${API_BASE_URL}${API_TOKENS_ENDPOINT}`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
-    });
+/**
+ * Obtiene token del API ÁRTIMO con reintentos automáticos
+ */
+async function obtainToken(username, password, retries = 3) {
+  const formData = new URLSearchParams();
+  formData.append('username', username);
+  formData.append('password', password);
+  formData.append('grant_type', 'password');
 
-    if (!response.ok) {
-      throw new Error(`Token Error: ${response.status} ${response.statusText}`);
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`🔐 Intento ${attempt}/${retries} obteniendo token...`);
+      const response = await fetchWithTimeout(`${API_BASE_URL}${API_TOKENS_ENDPOINT}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+      }, 30000);
+
+      if (!response.ok) {
+        throw new Error(`Token Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(`✓ Token obtenido (expira en ${data.expires_in} minutos)`);
+      return data.access_token;
+    } catch (error) {
+      console.warn(`✗ Intento ${attempt} fallido: ${error.message}`);
+      if (attempt < retries) {
+        const wait = attempt * 5000; // 5s, 10s entre reintentos
+        console.log(`⏳ Esperando ${wait/1000}s antes de reintentar...`);
+        await new Promise(r => setTimeout(r, wait));
+      } else {
+        console.error('✗ Todos los intentos fallaron');
+        throw error;
+      }
     }
-
-    const data = await response.json();
-    console.log(`✓ Token obtenido (expira en ${data.expires_in} minutos)`);
-    return data.access_token;
-  } catch (error) {
-    console.error('✗ Error obteniendo token:', error.message);
-    throw error;
   }
 }
 
@@ -65,13 +88,13 @@ async function obtainToken(username, password) {
  */
 async function getAllGPSData(token) {
   try {
-    const response = await fetch(`${API_BASE_URL}${API_GPS_ENDPOINT}`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}${API_GPS_ENDPOINT}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'Authorization': `Bearer ${token}`,
       },
-    });
+    }, 30000);
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status} ${response.statusText}`);
