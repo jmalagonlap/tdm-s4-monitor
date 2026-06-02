@@ -76,7 +76,8 @@ class TDMMonitor {
     this.updateInterval = 60 * 1000; // 60 segundos
     this.updateTimer = null;
     this.chart = null;
-    this.dataUrl = '/gps-data.json';
+    // Carga directamente desde GitHub (no Vercel) para evitar retrasos de redeploy
+    this.dataUrl = 'https://raw.githubusercontent.com/jmalagonlap/tdm-s4-monitor/main/gps-data.json';
   }
 
   async init() {
@@ -99,7 +100,11 @@ class TDMMonitor {
   async updateData() {
     try {
       console.log('📥 Cargando datos...');
-      const response = await fetch(this.dataUrl + '?t=' + Date.now()); // evitar caché
+      // Cache-bust para evitar que el CDN de GitHub sirva versión antigua
+      const response = await fetch(this.dataUrl + '?nocache=' + Date.now(), {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
 
       if (!response.ok) {
         console.warn(`Error ${response.status} cargando datos`);
