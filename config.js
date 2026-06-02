@@ -13,18 +13,19 @@ const CONFIG = {
   POLL_INTERVAL: 60000, // 1 minuto
   TOKEN_REFRESH_INTERVAL: 110 * 60 * 1000, // 110 minutos (token válido por 120 min)
 
-  // Credenciales para API ÁRTIMO
-  API_USERNAME: window.ENV_ARTIMO_USERNAME || 'artimo',
-  API_PASSWORD: window.ENV_ARTIMO_PASSWORD || 'Artimo2026!',
+  // Credenciales para API ÁRTIMO (se cargan desde API en init)
+  API_USERNAME: 'artimo',
+  API_PASSWORD: 'Artimo2026!',
 
   // Vehículos monitoreados (prefijo CO_ para Colombia)
-  // Syrus4G: placas con prefijo "1" | Mix FM: placas originales
+  // Syrus4G: placas SIN prefijo "1" (ej: CO_LKN501)
+  // Mix FM:  placas CON prefijo "1" (ej: CO_1LKN501)
   VEHICLES: [
-    { id: 'CO_LKN501', idSyrus: 'CO_1LKN501', label: 'Vehículo 1' },
-    { id: 'CO_JYX434', idSyrus: 'CO_1JYX434', label: 'Vehículo 2' },
-    { id: 'CO_STE582', idSyrus: 'CO_1STE582', label: 'Vehículo 3' },
-    { id: 'CO_STE577', idSyrus: 'CO_1STE577', label: 'Vehículo 4' },
-    { id: 'CO_STE060', idSyrus: 'CO_1STE060', label: 'Vehículo 5' },
+    { idSyrus4G: 'CO_LKN501', idMixFM: 'CO_1LKN501', label: 'LKN501' },
+    { idSyrus4G: 'CO_JYX434', idMixFM: 'CO_1JYX434', label: 'JYX434' },
+    { idSyrus4G: 'CO_STE582', idMixFM: 'CO_1STE582', label: 'STE582' },
+    { idSyrus4G: 'CO_STE577', idMixFM: 'CO_1STE577', label: 'STE577' },
+    { idSyrus4G: 'CO_STE060', idMixFM: 'CO_1STE060', label: 'STE060' },
   ],
 
   // Almacenamiento

@@ -13,12 +13,15 @@ const API_BASE_URL = 'https://api.artimo.com.co';
 const API_TOKENS_ENDPOINT = '/tokens';
 const API_GPS_ENDPOINT = '/rtdata/gpsv2/latest';
 
+// LÓGICA ACTUALIZADA:
+// idSyrus4G → placas SIN prefijo "1" (ej: CO_LKN501)  → tecnología Syrus4G
+// idMixFM   → placas CON prefijo "1" (ej: CO_1LKN501) → tecnología Mix FM
 const VEHICLES = [
-  { id: 'CO_LKN501', idSyrus: 'CO_1LKN501', label: 'Vehículo 1' },
-  { id: 'CO_JYX434', idSyrus: 'CO_1JYX434', label: 'Vehículo 2' },
-  { id: 'CO_STE582', idSyrus: 'CO_1STE582', label: 'Vehículo 3' },
-  { id: 'CO_STE577', idSyrus: 'CO_1STE577', label: 'Vehículo 4' },
-  { id: 'CO_STE060', idSyrus: 'CO_1STE060', label: 'Vehículo 5' },
+  { idSyrus4G: 'CO_LKN501', idMixFM: 'CO_1LKN501', label: 'LKN501' },
+  { idSyrus4G: 'CO_JYX434', idMixFM: 'CO_1JYX434', label: 'JYX434' },
+  { idSyrus4G: 'CO_STE582', idMixFM: 'CO_1STE582', label: 'STE582' },
+  { idSyrus4G: 'CO_STE577', idMixFM: 'CO_1STE577', label: 'STE577' },
+  { idSyrus4G: 'CO_STE060', idMixFM: 'CO_1STE060', label: 'STE060' },
 ];
 
 const DATA_DIR = path.join(__dirname, '..', 'data');
@@ -222,9 +225,9 @@ async function main() {
 
     for (const vehiculo of VEHICLES) {
       try {
-        // Obtener datos filtrados para este vehículo
-        const syrusRawData = getFilteredGPSData(gpsMap, vehiculo.idSyrus);
-        const mixfmRawData = getFilteredGPSData(gpsMap, vehiculo.id);
+        // Syrus4G = placa SIN "1" (id corto) | Mix FM = placa CON "1"
+        const syrusRawData = getFilteredGPSData(gpsMap, vehiculo.idSyrus4G);
+        const mixfmRawData = getFilteredGPSData(gpsMap, vehiculo.idMixFM);
 
         // Contar posiciones nuevas (deduplicadas)
         const syrusGPSResult = countNewGPS(
@@ -237,8 +240,8 @@ async function main() {
         );
 
         vehicleData[vehiculo.label] = {
-          placaSyrus: vehiculo.idSyrus,
-          placaMixFM: vehiculo.id,
+          placaSyrus: vehiculo.idSyrus4G,
+          placaMixFM: vehiculo.idMixFM,
           syrus: {
             newPositions: syrusGPSResult.newCount,
             totalPositions: syrusGPSResult.totalCount,
@@ -259,8 +262,8 @@ async function main() {
       } catch (error) {
         console.error(`✗ Error con ${vehiculo.label}:`, error.message);
         vehicleData[vehiculo.label] = {
-          placaSyrus: vehiculo.idSyrus,
-          placaMixFM: vehiculo.id,
+          placaSyrus: vehiculo.idSyrus4G,
+          placaMixFM: vehiculo.idMixFM,
           syrus: { newPositions: 0, totalPositions: 0, positions: [] },
           mixfm: { newPositions: 0, totalPositions: 0, positions: [] },
           diferencia: 0,
