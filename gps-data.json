@@ -35219,6 +35219,152 @@
           "diferencia": -1
         }
       }
+    },
+    {
+      "timestamp": "2026-06-02T08:00:20.128Z",
+      "syrusTotal": 5,
+      "mixfmTotal": 4,
+      "diferencia": 1,
+      "vehiculos": {
+        "Vehículo 1": {
+          "placaSyrus": "CO_1LKN501",
+          "placaMixFM": "CO_LKN501",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T07:59:55Z",
+                "latitude": 6.390089988708496,
+                "longitude": -75.71675109863281,
+                "speed": 62
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T08:00:12Z",
+                "latitude": 6.391749858856201,
+                "longitude": -75.7185287475586,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "Vehículo 2": {
+          "placaSyrus": "CO_1JYX434",
+          "placaMixFM": "CO_JYX434",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-01T15:04:17Z",
+                "latitude": 6.382750034332275,
+                "longitude": -75.46662902832031,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-05-29T15:26:47Z",
+                "latitude": 6.382399082183838,
+                "longitude": -75.46676635742188,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "Vehículo 3": {
+          "placaSyrus": "CO_1STE582",
+          "placaMixFM": "CO_STE582",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T08:00:08Z",
+                "latitude": 6.3829498291015625,
+                "longitude": -75.46576690673828,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T07:58:46Z",
+                "latitude": 6.382980823516846,
+                "longitude": -75.46568298339844,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "Vehículo 4": {
+          "placaSyrus": "CO_1STE577",
+          "placaMixFM": "CO_STE577",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T07:59:59Z",
+                "latitude": 5.842830181121826,
+                "longitude": -75.73774719238281,
+                "speed": 66
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T08:00:05Z",
+                "latitude": 5.844005107879639,
+                "longitude": -75.73780822753906,
+                "speed": 66
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "Vehículo 5": {
+          "placaSyrus": "CO_1STE060",
+          "placaMixFM": "CO_STE060",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T07:54:40Z",
+                "latitude": 6.382659912109375,
+                "longitude": -75.46569061279297,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 0,
+            "totalPositions": 1,
+            "positions": []
+          },
+          "diferencia": 1
+        }
+      }
     }
   ]
 }
