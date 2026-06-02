@@ -1,1 +1,157 @@
-{"records": []}
+{
+  "records": [
+    {
+      "timestamp": "2026-06-02T20:18:18.545Z",
+      "syrusTotal": 5,
+      "mixfmTotal": 5,
+      "diferencia": 0,
+      "vehiculos": {
+        "LKN501": {
+          "placaSyrus": "CO_LKN501",
+          "placaMixFM": "CO_1LKN501",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:08:59Z",
+                "latitude": 7.920820236206055,
+                "longitude": -76.73648071289062,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:08:50Z",
+                "latitude": 7.92086124420166,
+                "longitude": -76.73627471923828,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "JYX434": {
+          "placaSyrus": "CO_JYX434",
+          "placaMixFM": "CO_1JYX434",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-05-29T15:26:47Z",
+                "latitude": 6.382399082183838,
+                "longitude": -75.46676635742188,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-01T15:04:17Z",
+                "latitude": 6.382750034332275,
+                "longitude": -75.46662902832031,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "STE582": {
+          "placaSyrus": "CO_STE582",
+          "placaMixFM": "CO_1STE582",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:17:56Z",
+                "latitude": 5.997290134429932,
+                "longitude": -75.8139419555664,
+                "speed": 44
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:08:42Z",
+                "latitude": 5.99833345413208,
+                "longitude": -75.77908325195312,
+                "speed": 35
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "STE577": {
+          "placaSyrus": "CO_STE577",
+          "placaMixFM": "CO_1STE577",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:14:27Z",
+                "latitude": 6.382740020751953,
+                "longitude": -75.4668197631836,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:13:30Z",
+                "latitude": 6.38266658782959,
+                "longitude": -75.4666976928711,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "STE060": {
+          "placaSyrus": "CO_STE060",
+          "placaMixFM": "CO_1STE060",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:08:14Z",
+                "latitude": 6.179850101470947,
+                "longitude": -75.43305969238281,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-02T20:13:48Z",
+                "latitude": 6.1799445152282715,
+                "longitude": -75.43313598632812,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        }
+      }
+    }
+  ]
+}
