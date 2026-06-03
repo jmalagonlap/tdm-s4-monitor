@@ -76,8 +76,8 @@ class TDMMonitor {
     this.updateInterval = 60 * 1000; // 60 segundos
     this.updateTimer = null;
     this.chart = null;
-    // Repo privado → servir desde Vercel como archivo estático
-    this.dataUrl = '/gps-data.json';
+    // Repo público → leer directo de GitHub raw (sin depender de deploys de Vercel)
+    this.dataUrl = 'https://raw.githubusercontent.com/jmalagonlap/tdm-s4-monitor/main/gps-data.json';
   }
 
   async init() {
