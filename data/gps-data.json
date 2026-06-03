@@ -73777,6 +73777,152 @@
           "diferencia": 0
         }
       }
+    },
+    {
+      "timestamp": "2026-06-03T16:36:15.316Z",
+      "syrusTotal": 4,
+      "mixfmTotal": 5,
+      "diferencia": -1,
+      "vehiculos": {
+        "LKN501": {
+          "placaSyrus": "CO_LKN501",
+          "placaMixFM": "CO_1LKN501",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-03T16:36:05Z",
+                "latitude": 6.3710198402404785,
+                "longitude": -75.7191390991211,
+                "speed": 17
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-03T16:35:29Z",
+                "latitude": 6.372805595397949,
+                "longitude": -75.7199478149414,
+                "speed": 36
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "JYX434": {
+          "placaSyrus": "CO_JYX434",
+          "placaMixFM": "CO_1JYX434",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-05-29T15:26:47Z",
+                "latitude": 6.382399082183838,
+                "longitude": -75.46676635742188,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-01T15:04:17Z",
+                "latitude": 6.382750034332275,
+                "longitude": -75.46662902832031,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "STE582": {
+          "placaSyrus": "CO_STE582",
+          "placaMixFM": "CO_1STE582",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-03T16:35:57Z",
+                "latitude": 3.886240005493164,
+                "longitude": -76.97026062011719,
+                "speed": 0
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-03T16:35:26Z",
+                "latitude": 3.8862500190734863,
+                "longitude": -76.9701919555664,
+                "speed": 0
+              }
+            ]
+          },
+          "diferencia": 0
+        },
+        "STE577": {
+          "placaSyrus": "CO_STE577",
+          "placaMixFM": "CO_1STE577",
+          "syrus": {
+            "newPositions": 0,
+            "totalPositions": 1,
+            "positions": []
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-03T16:33:53Z",
+                "latitude": 6.004361152648926,
+                "longitude": -75.79846954345703,
+                "speed": 37
+              }
+            ]
+          },
+          "diferencia": -1
+        },
+        "STE060": {
+          "placaSyrus": "CO_STE060",
+          "placaMixFM": "CO_1STE060",
+          "syrus": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-03T16:35:46Z",
+                "latitude": 6.381219863891602,
+                "longitude": -75.47931671142578,
+                "speed": 52
+              }
+            ]
+          },
+          "mixfm": {
+            "newPositions": 1,
+            "totalPositions": 1,
+            "positions": [
+              {
+                "date": "2026-06-03T16:35:29Z",
+                "latitude": 6.3814167976379395,
+                "longitude": -75.47721862792969,
+                "speed": 65
+              }
+            ]
+          },
+          "diferencia": 0
+        }
+      }
     }
   ]
 }
