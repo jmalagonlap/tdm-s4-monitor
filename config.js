@@ -13,9 +13,9 @@ const CONFIG = {
   POLL_INTERVAL: 60000, // 1 minuto
   TOKEN_REFRESH_INTERVAL: 110 * 60 * 1000, // 110 minutos (token válido por 120 min)
 
-  // Credenciales para API ÁRTIMO (se cargan desde API en init)
-  API_USERNAME: 'artimo',
-  API_PASSWORD: 'Artimo2026!',
+  // Credenciales para API ÁRTIMO — solo en GitHub Secrets / Vercel env vars
+  API_USERNAME: '',
+  API_PASSWORD: '',
 
   // Vehículos monitoreados (prefijo CO_ para Colombia)
   // Syrus4G: placas SIN prefijo "1" (ej: CO_LKN501)
@@ -38,10 +38,7 @@ const CONFIG = {
   CHART_UPDATE_INTERVAL: 500, // ms
 };
 
-// Inyectar credenciales desde Vercel si existen
-if (window.ENV_ARTIMO_USERNAME) {
-  CONFIG.DEFAULT_USERS[window.ENV_ARTIMO_USERNAME] = window.ENV_ARTIMO_PASSWORD || 'Artimo2026!';
-}
+// Credenciales solo desde variables de entorno (nunca hardcodeadas)
 
 // Detectar ambiente
 CONFIG.IS_DEVELOPMENT = (

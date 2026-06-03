@@ -6,8 +6,8 @@
 class ArtimoAuth {
   constructor() {
     // Usar credenciales desde CONFIG
-    const apiUser = CONFIG ? CONFIG.API_USERNAME : 'artimo';
-    const apiPass = CONFIG ? CONFIG.API_PASSWORD : 'Artimo2026!';
+    const apiUser = CONFIG ? CONFIG.API_USERNAME : '';
+    const apiPass = CONFIG ? CONFIG.API_PASSWORD : '';
     this.users = {
       [apiUser]: apiPass,
     };
