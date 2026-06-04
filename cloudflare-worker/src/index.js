@@ -87,8 +87,8 @@ async function pollGPS(env) {
 
   console.log(`🚀 Poll — ${new Date().toISOString()}`);
 
-  // 1. Token
-  const token = await obtainToken(username, password);
+  // 1. Token — reutiliza el cacheado si aún es válido (expira en 120 min)
+  const token = await getOrRefreshToken(env, username, password);
   console.log('✓ Token');
 
   // 2. GPS
@@ -221,6 +221,32 @@ async function compactDailyIfNeeded(env, records) {
 }
 
 // ─── API ÁRTIMO ───────────────────────────────────────────────────────────────
+
+/**
+ * Devuelve el token cacheado en KV si aún es válido,
+ * o solicita uno nuevo y lo guarda. Token válido por 120 min → cache 110 min.
+ */
+async function getOrRefreshToken(env, username, password) {
+  const cached = await env.GPS_KV.get('auth-token', { type: 'json' });
+  const now    = Date.now();
+
+  if (cached && cached.token && cached.expiresAt > now) {
+    const minsLeft = Math.round((cached.expiresAt - now) / 60000);
+    console.log(`✓ Token cacheado (expira en ${minsLeft} min)`);
+    return cached.token;
+  }
+
+  // Solicitar token nuevo
+  console.log('🔐 Solicitando nuevo token...');
+  const token = await obtainToken(username, password);
+
+  // Guardar en KV con expiración de 110 minutos
+  const expiresAt = now + (110 * 60 * 1000);
+  await env.GPS_KV.put('auth-token', JSON.stringify({ token, expiresAt }));
+  console.log('✓ Token nuevo guardado en KV (válido 110 min)');
+
+  return token;
+}
 
 async function obtainToken(username, password) {
   const body = new URLSearchParams({ username, password, grant_type: 'password' });
