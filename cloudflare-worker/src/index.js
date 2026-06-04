@@ -264,19 +264,34 @@ async function obtainToken(username, password) {
 
 async function getAllGPSData(token) {
   // Filtrar solo las 10 placas monitoreadas (5 Syrus4G + 5 Mix FM)
-  // Esto reduce el tamaño de respuesta y evita traer datos innecesarios
+  // Comas literales — la API no acepta %2C (encodeURIComponent)
   const plates = VEHICLES.flatMap(v => [v.idSyrus4G, v.idMixFM]).join(',');
-  const url = `${API_BASE_URL}${API_GPS_ENDPOINT}?plates=${encodeURIComponent(plates)}`;
+  const url = `${API_BASE_URL}${API_GPS_ENDPOINT}?plates=${plates}`;
 
-  const res = await fetch(url, {
-    headers: {
-      'Accept':        'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-  if (!res.ok) throw new Error(`GPS ${res.status}: ${res.statusText}`);
+  console.log(`📡 GPS URL: ${url}`);
+
+  let res;
+  try {
+    res = await fetch(url, {
+      headers: {
+        'Accept':        'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    throw new Error(`GPS fetch error: ${err.message}`);
+  }
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`GPS ${res.status}: ${res.statusText} — ${body.slice(0, 200)}`);
+  }
+
   const data = await res.json();
-  if (!Array.isArray(data)) return {};
+  if (!Array.isArray(data)) {
+    console.log(`⚠️ GPS response no es array: ${JSON.stringify(data).slice(0, 200)}`);
+    return {};
+  }
 
   const map = {};
   for (const r of data) {
