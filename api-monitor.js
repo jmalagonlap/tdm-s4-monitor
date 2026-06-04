@@ -76,9 +76,8 @@ class TDMMonitor {
     this.updateInterval = 60 * 1000; // 60 segundos
     this.updateTimer = null;
     this.chart = null;
-    // Cloudflare Worker — actualiza cada minuto sin GitHub ni Vercel
-    // Reemplazar con la URL real del worker después de desplegarlo
-    this.dataUrl = 'https://tdm-gps-monitor.REEMPLAZAR.workers.dev';
+    // Cloudflare Worker — datos frescos cada minuto, sin GitHub API ni Vercel deploys
+    this.dataUrl = 'https://tdm-gps-monitor.jmalagon.workers.dev';
   }
 
   async init() {
