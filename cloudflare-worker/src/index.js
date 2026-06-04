@@ -263,7 +263,12 @@ async function obtainToken(username, password) {
 }
 
 async function getAllGPSData(token) {
-  const res = await fetch(`${API_BASE_URL}${API_GPS_ENDPOINT}`, {
+  // Filtrar solo las 10 placas monitoreadas (5 Syrus4G + 5 Mix FM)
+  // Esto reduce el tamaño de respuesta y evita traer datos innecesarios
+  const plates = VEHICLES.flatMap(v => [v.idSyrus4G, v.idMixFM]).join(',');
+  const url = `${API_BASE_URL}${API_GPS_ENDPOINT}?plates=${encodeURIComponent(plates)}`;
+
+  const res = await fetch(url, {
     headers: {
       'Accept':        'application/json',
       'Authorization': `Bearer ${token}`,

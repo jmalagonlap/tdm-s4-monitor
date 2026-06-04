@@ -5,8 +5,8 @@ compatibility_date = "2024-09-23"
 # KV Namespace — crear en Cloudflare dashboard y pegar el ID aquí
 [[kv_namespaces]]
 binding = "GPS_KV"
-id = "REEMPLAZAR_CON_KV_NAMESPACE_ID"
+id = "cebc303d70d441aca8938aa42c278b60"
 
-# Cron: cada 1 minuto
+# Cron: cada 1 minuto (API permite consultas cada 30 segundos mínimo)
 [triggers]
 crons = ["* * * * *"]
