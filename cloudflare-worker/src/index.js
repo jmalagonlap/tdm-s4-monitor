@@ -91,8 +91,20 @@ async function pollGPS(env) {
   const token = await getOrRefreshToken(env, username, password);
   console.log('✓ Token');
 
-  // 2. GPS
-  const gpsMap = await getAllGPSData(token);
+  // 2. GPS — si el token expiró (401), borrar caché y reintentar con token nuevo
+  let gpsMap;
+  try {
+    gpsMap = await getAllGPSData(token);
+  } catch (err) {
+    if (err.message.includes('401')) {
+      console.log('🔄 Token expirado (401) — invalidando caché y reintentando...');
+      await env.GPS_KV.delete('auth-token');
+      const freshToken = await getOrRefreshToken(env, username, password);
+      gpsMap = await getAllGPSData(freshToken);
+    } else {
+      throw err;
+    }
+  }
   console.log('✓ GPS');
 
   // 3. Datos previos
