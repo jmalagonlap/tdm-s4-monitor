@@ -72,11 +72,11 @@ function showDashboard() {
 
 class TDMMonitor {
   constructor() {
-    this.data = [];
-    this.updateInterval = 60 * 1000; // 60 segundos
+    this.data  = [];   // registros últimas 24h (minuto a minuto)
+    this.daily = [];   // resúmenes diarios históricos
+    this.updateInterval = 60 * 1000;
     this.updateTimer = null;
     this.chart = null;
-    // Cloudflare Worker — datos frescos cada minuto, sin GitHub API ni Vercel deploys
     this.dataUrl = 'https://tdm-gps-monitor.jmalagon.workers.dev';
   }
 
@@ -115,8 +115,9 @@ class TDMMonitor {
       const json = await response.json();
 
       if (json.records && json.records.length > 0) {
-        this.data = json.records;
-        console.log(`✓ ${this.data.length} registros cargados`);
+        this.data  = json.records;
+        this.daily = json.daily || [];
+        console.log(`✓ ${this.data.length} registros 24h + ${this.daily.length} días históricos`);
         this.updateDashboard();
         document.getElementById('statusText').textContent = 'Activo';
         document.getElementById('statusText').classList.add('active');
@@ -179,28 +180,66 @@ class TDMMonitor {
   }
 
   /**
-   * Acumulado total histórico (todos los registros en gps-data.json)
+   * Acumulado total histórico = todos los días en daily-history + hoy en curso
    */
   getAllTimeAccumulated() {
-    let syrus = 0;
-    let mixfm = 0;
-    for (const record of this.data) {
-      syrus += record.syrusTotal || 0;
-      mixfm += record.mixfmTotal || 0;
+    // Días pasados (compactados)
+    let syrus = this.daily.reduce((s, d) => s + (d.syrusTotal || 0), 0);
+    let mixfm = this.daily.reduce((s, d) => s + (d.mixfmTotal || 0), 0);
+    // Hoy (aún en records, no compactado)
+    const today = this.getTodayStr();
+    for (const r of this.data) {
+      const d = new Date(r.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+      if (d === today) { syrus += r.syrusTotal || 0; mixfm += r.mixfmTotal || 0; }
     }
     return { syrus, mixfm, diferencia: syrus - mixfm };
   }
 
   /**
-   * Agrupa registros por día para la gráfica
+   * Totales históricos acumulados por vehículo (todos los días + hoy)
+   */
+  getVehicleHistoryTotals() {
+    const totals = {};
+    // Días pasados
+    for (const day of this.daily) {
+      if (!day.vehiculos) continue;
+      for (const [label, vData] of Object.entries(day.vehiculos)) {
+        if (!totals[label]) totals[label] = { syrus: 0, mixfm: 0 };
+        totals[label].syrus += vData.syrus || 0;
+        totals[label].mixfm += vData.mixfm || 0;
+      }
+    }
+    // Hoy
+    const today = this.getTodayStr();
+    for (const r of this.data) {
+      const d = new Date(r.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+      if (d !== today || !r.vehiculos) continue;
+      for (const [label, vData] of Object.entries(r.vehiculos)) {
+        if (!totals[label]) totals[label] = { syrus: 0, mixfm: 0 };
+        totals[label].syrus += vData.syrus?.newPositions || 0;
+        totals[label].mixfm += vData.mixfm?.newPositions || 0;
+      }
+    }
+    return totals;
+  }
+
+  /**
+   * Agrupa por día: combina daily-history (días pasados) + hoy en curso
    */
   getDailyTotals() {
     const byDay = {};
-    for (const record of this.data) {
-      const day = new Date(record.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
-      if (!byDay[day]) byDay[day] = { syrus: 0, mixfm: 0 };
-      byDay[day].syrus += record.syrusTotal || 0;
-      byDay[day].mixfm += record.mixfmTotal || 0;
+    // Días pasados desde histórico
+    for (const day of this.daily) {
+      byDay[day.date] = { syrus: day.syrusTotal || 0, mixfm: day.mixfmTotal || 0 };
+    }
+    // Hoy desde records
+    const today = this.getTodayStr();
+    if (!byDay[today]) byDay[today] = { syrus: 0, mixfm: 0 };
+    for (const r of this.data) {
+      const d = new Date(r.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+      if (d !== today) continue;
+      byDay[today].syrus += r.syrusTotal || 0;
+      byDay[today].mixfm += r.mixfmTotal || 0;
     }
     return byDay;
   }
@@ -243,6 +282,7 @@ class TDMMonitor {
     }
 
     this.renderVehiclesTable();
+    this.renderHistoryTable();
     this.renderDataTable();
     if (this.chart) this.updateChart();
   }
@@ -280,6 +320,55 @@ class TDMMonitor {
         <td class="diff-col ${diffClass}">${diffSign}${diff.toLocaleString('es-CO')}</td>
         <td>${status}</td>
       `;
+      tbody.appendChild(row);
+    }
+  }
+
+  // ─── Tabla histórico acumulado por vehículo ──────────────────────────────
+
+  renderHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const totals = this.getVehicleHistoryTotals();
+    if (Object.keys(totals).length === 0) return;
+
+    // Rango de fechas
+    const firstDay = this.daily.length > 0 ? this.daily[0].date : this.getTodayStr();
+    const lastDay  = this.getTodayStr();
+    const [fy, fm, fd] = firstDay.split('-');
+    const [ly, lm, ld] = lastDay.split('-');
+    const periodo = `${fd}/${fm}/${fy} — ${ld}/${lm}/${ly}`;
+
+    // Actualizar subtítulo si existe
+    const subtitleEl = document.getElementById('historyPeriod');
+    if (subtitleEl) subtitleEl.textContent = periodo;
+
+    let firstRow = true;
+    for (const [label, vData] of Object.entries(totals)) {
+      const diff     = vData.syrus - vData.mixfm;
+      const diffSign = diff > 0 ? '+' : '';
+      const diffClass = diff > 0 ? 'positive' : diff < 0 ? 'negative' : '';
+
+      const row = document.createElement('tr');
+      if (firstRow) {
+        row.innerHTML = `
+          <td rowspan="${Object.keys(totals).length}" class="timestamp-cell" style="font-size:11px;">${periodo}</td>
+          <td><strong>${label}</strong></td>
+          <td class="syrus-col">${vData.syrus.toLocaleString('es-CO')}</td>
+          <td class="mixfm-col">${vData.mixfm.toLocaleString('es-CO')}</td>
+          <td class="diff-col ${diffClass}">${diffSign}${diff.toLocaleString('es-CO')}</td>
+        `;
+        firstRow = false;
+      } else {
+        row.innerHTML = `
+          <td><strong>${label}</strong></td>
+          <td class="syrus-col">${vData.syrus.toLocaleString('es-CO')}</td>
+          <td class="mixfm-col">${vData.mixfm.toLocaleString('es-CO')}</td>
+          <td class="diff-col ${diffClass}">${diffSign}${diff.toLocaleString('es-CO')}</td>
+        `;
+      }
       tbody.appendChild(row);
     }
   }

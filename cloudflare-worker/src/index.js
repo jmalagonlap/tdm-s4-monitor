@@ -1,18 +1,20 @@
 /**
  * TDM S4 Monitor — Cloudflare Worker
- * Polling GPS cada 1 minuto sin depender de GitHub ni Vercel
+ * Polling GPS cada 1 minuto + resúmenes diarios históricos
  *
- * Env vars necesarias (Cloudflare dashboard → Worker → Settings → Variables):
- *   ARTIMO_USERNAME  — usuario API ÁRTIMO
- *   ARTIMO_PASSWORD  — contraseña API ÁRTIMO
+ * KV keys:
+ *   gps-data      → últimas 24h (minuto a minuto, max 1440 registros)
+ *   daily-history → resúmenes diarios acumulados indefinidamente
  *
- * KV binding necesario: GPS_KV
+ * HTTP endpoints:
+ *   GET /        → { records: [...24h], daily: [...history] }
+ *   GET /poll    → disparo manual para pruebas
  */
 
-const API_BASE_URL = 'https://api.artimo.com.co';
+const API_BASE_URL      = 'https://api.artimo.com.co';
 const API_TOKENS_ENDPOINT = '/tokens';
-const API_GPS_ENDPOINT = '/rtdata/gpsv2/latest';
-const MAX_RECORDS = 1440; // 24h a 1 min/poll
+const API_GPS_ENDPOINT  = '/rtdata/gpsv2/latest';
+const MAX_RECORDS       = 1440; // 24h a 1 min/poll
 
 const VEHICLES = [
   { idSyrus4G: 'CO_LKN501', idMixFM: 'CO_1LKN501', label: 'LKN501' },
@@ -26,8 +28,8 @@ const VEHICLES = [
 
 export default {
   /**
-   * HTTP handler — el dashboard llama aquí para leer los datos
-   * GET https://tdm-gps-monitor.<account>.workers.dev
+   * HTTP handler — sirve datos al dashboard
+   * Retorna { records: [...24h], daily: [...allDays] }
    */
   async fetch(request, env) {
     const corsHeaders = {
@@ -36,7 +38,6 @@ export default {
       'Cache-Control': 'no-store, no-cache, must-revalidate',
     };
 
-    // Preflight CORS
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
@@ -51,61 +52,67 @@ export default {
       });
     }
 
-    // GET / — retorna datos actuales
-    const data = await env.GPS_KV.get('gps-data', { type: 'json' });
-    return new Response(JSON.stringify(data || { records: [] }), {
-      headers: corsHeaders,
-    });
+    // GET / — retorna datos completos (24h + histórico diario)
+    const [gpsData, dailyHistory] = await Promise.all([
+      env.GPS_KV.get('gps-data',      { type: 'json' }),
+      env.GPS_KV.get('daily-history',  { type: 'json' }),
+    ]);
+
+    const response = {
+      records: (gpsData?.records)       || [],
+      daily:   (dailyHistory?.days)     || [],
+    };
+
+    return new Response(JSON.stringify(response), { headers: corsHeaders });
   },
 
   /**
-   * Cron trigger — ejecuta el poll automáticamente
-   * Configurado en wrangler.toml: "* * * * *" (cada minuto)
+   * Cron trigger — cada minuto
    */
   async scheduled(event, env, ctx) {
     ctx.waitUntil(pollGPS(env));
   },
 };
 
-// ─── Polling ──────────────────────────────────────────────────────────────────
+// ─── Poll principal ───────────────────────────────────────────────────────────
 
 async function pollGPS(env) {
   const username = env.ARTIMO_USERNAME;
   const password = env.ARTIMO_PASSWORD;
 
   if (!username || !password) {
-    console.error('❌ Faltan ARTIMO_USERNAME / ARTIMO_PASSWORD en env vars');
+    console.error('❌ Faltan ARTIMO_USERNAME / ARTIMO_PASSWORD');
     return;
   }
 
-  console.log(`🚀 Iniciando poll — ${new Date().toISOString()}`);
+  console.log(`🚀 Poll — ${new Date().toISOString()}`);
 
-  // 1. Obtener token
+  // 1. Token
   const token = await obtainToken(username, password);
-  console.log('✓ Token obtenido');
+  console.log('✓ Token');
 
-  // 2. Obtener GPS (1 solo llamado)
+  // 2. GPS
   const gpsMap = await getAllGPSData(token);
-  console.log('✓ GPS recibido');
+  console.log('✓ GPS');
 
-  // 3. Cargar datos previos desde KV
-  const existing = (await env.GPS_KV.get('gps-data', { type: 'json' })) || { records: [] };
+  // 3. Datos previos
+  const existing  = (await env.GPS_KV.get('gps-data', { type: 'json' })) || { records: [] };
   const prevRecord = existing.records.length > 0
     ? existing.records[existing.records.length - 1]
     : null;
 
   // 4. Procesar vehículos
-  const timestamp = new Date().toISOString();
-  let syrusTotal = 0;
-  let mixfmTotal = 0;
+  const timestamp  = new Date().toISOString();
+  let syrusTotal   = 0;
+  let mixfmTotal   = 0;
   const vehicleData = {};
 
   for (const v of VEHICLES) {
     const syrusRaw = gpsMap[v.idSyrus4G] || [];
-    const mixfmRaw  = gpsMap[v.idMixFM]  || [];
+    const mixfmRaw = gpsMap[v.idMixFM]   || [];
 
     const syrusResult = countNewGPS(syrusRaw, prevRecord?.vehiculos?.[v.label]?.syrus);
-    const mixfmResult  = countNewGPS(mixfmRaw,  prevRecord?.vehiculos?.[v.label]?.mixfm);
+    const mixfmResult = countNewGPS(mixfmRaw, prevRecord?.vehiculos?.[v.label]?.mixfm);
 
     vehicleData[v.label] = {
       placaSyrus: v.idSyrus4G,
@@ -125,10 +132,10 @@ async function pollGPS(env) {
 
     syrusTotal += syrusResult.newCount;
     mixfmTotal += mixfmResult.newCount;
-    console.log(`  ${v.label}: Syrus=${syrusResult.newCount} MixFM=${mixfmResult.newCount}`);
+    console.log(`  ${v.label}: S=${syrusResult.newCount} M=${mixfmResult.newCount}`);
   }
 
-  // 5. Guardar en KV
+  // 5. Agregar registro y recortar a 24h
   existing.records.push({
     timestamp,
     syrusTotal,
@@ -141,47 +148,109 @@ async function pollGPS(env) {
     existing.records = existing.records.slice(-MAX_RECORDS);
   }
 
+  // 6. Guardar en KV
   await env.GPS_KV.put('gps-data', JSON.stringify(existing));
-  console.log(`✅ Guardado. Total registros: ${existing.records.length}`);
+  console.log(`✅ Registros en KV: ${existing.records.length}`);
+
+  // 7. Compactar días anteriores al histórico diario
+  await compactDailyIfNeeded(env, existing.records);
+}
+
+// ─── Compactación diaria ──────────────────────────────────────────────────────
+
+/**
+ * Detecta si hay días completos (no el de hoy) que aún no tienen
+ * entrada en daily-history, y los agrega.
+ */
+async function compactDailyIfNeeded(env, records) {
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+
+  // Agrupar registros por fecha (excluyendo hoy)
+  const byDate = {};
+  for (const r of records) {
+    const d = new Date(r.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    if (d === todayStr) continue; // hoy se compactará mañana
+    if (!byDate[d]) byDate[d] = [];
+    byDate[d].push(r);
+  }
+
+  const pastDates = Object.keys(byDate);
+  if (pastDates.length === 0) return;
+
+  // Leer histórico actual
+  const history = (await env.GPS_KV.get('daily-history', { type: 'json' })) || { days: [] };
+  const alreadySummarized = new Set(history.days.map(d => d.date));
+
+  const datesToAdd = pastDates.filter(d => !alreadySummarized.has(d));
+  if (datesToAdd.length === 0) return;
+
+  for (const date of datesToAdd) {
+    const dayRecords = byDate[date];
+    let syrusTotal = 0;
+    let mixfmTotal = 0;
+    const vehiculos = {};
+
+    for (const r of dayRecords) {
+      syrusTotal += r.syrusTotal || 0;
+      mixfmTotal += r.mixfmTotal || 0;
+
+      if (r.vehiculos) {
+        for (const [label, vData] of Object.entries(r.vehiculos)) {
+          if (!vehiculos[label]) vehiculos[label] = { syrus: 0, mixfm: 0 };
+          vehiculos[label].syrus += vData.syrus?.newPositions || 0;
+          vehiculos[label].mixfm += vData.mixfm?.newPositions || 0;
+        }
+      }
+    }
+
+    history.days.push({
+      date,
+      syrusTotal,
+      mixfmTotal,
+      diferencia: syrusTotal - mixfmTotal,
+      vehiculos,
+    });
+
+    console.log(`📊 Día compactado: ${date} → S=${syrusTotal} M=${mixfmTotal} (${dayRecords.length} registros)`);
+  }
+
+  // Ordenar por fecha ascendente
+  history.days.sort((a, b) => a.date.localeCompare(b.date));
+
+  await env.GPS_KV.put('daily-history', JSON.stringify(history));
 }
 
 // ─── API ÁRTIMO ───────────────────────────────────────────────────────────────
 
 async function obtainToken(username, password) {
   const body = new URLSearchParams({ username, password, grant_type: 'password' });
-
-  const res = await fetch(`${API_BASE_URL}${API_TOKENS_ENDPOINT}`, {
+  const res  = await fetch(`${API_BASE_URL}${API_TOKENS_ENDPOINT}`, {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
+      'Accept':       'application/json',
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: body.toString(),
   });
-
-  if (!res.ok) throw new Error(`Token error ${res.status}: ${res.statusText}`);
-  const data = await res.json();
-  return data.access_token;
+  if (!res.ok) throw new Error(`Token ${res.status}: ${res.statusText}`);
+  return (await res.json()).access_token;
 }
 
 async function getAllGPSData(token) {
   const res = await fetch(`${API_BASE_URL}${API_GPS_ENDPOINT}`, {
     headers: {
-      'Accept': 'application/json',
+      'Accept':        'application/json',
       'Authorization': `Bearer ${token}`,
     },
   });
-
-  if (!res.ok) throw new Error(`GPS error ${res.status}: ${res.statusText}`);
+  if (!res.ok) throw new Error(`GPS ${res.status}: ${res.statusText}`);
   const data = await res.json();
   if (!Array.isArray(data)) return {};
 
-  // Agrupar por placa
   const map = {};
-  for (const record of data) {
-    const plate = record.machineName;
-    if (!map[plate]) map[plate] = [];
-    map[plate].push(record);
+  for (const r of data) {
+    if (!map[r.machineName]) map[r.machineName] = [];
+    map[r.machineName].push(r);
   }
   return map;
 }
@@ -189,9 +258,8 @@ async function getAllGPSData(token) {
 // ─── Deduplicación ────────────────────────────────────────────────────────────
 
 function countNewGPS(currentData, previousData) {
-  const prevPositions = previousData?.positions || [];
   const prevKeys = new Set(
-    prevPositions.map(p => `${p.latitude},${p.longitude},${p.date}`)
+    (previousData?.positions || []).map(p => `${p.latitude},${p.longitude},${p.date}`)
   );
 
   const newPositions = [];
@@ -199,12 +267,7 @@ function countNewGPS(currentData, previousData) {
     const date = r.lastDatetime || r.date || '';
     const key  = `${r.latitude},${r.longitude},${date}`;
     if (!prevKeys.has(key)) {
-      newPositions.push({
-        date,
-        latitude:  r.latitude,
-        longitude: r.longitude,
-        speed:     r.speed || 0,
-      });
+      newPositions.push({ date, latitude: r.latitude, longitude: r.longitude, speed: r.speed || 0 });
     }
   }
 
