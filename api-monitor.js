@@ -76,8 +76,9 @@ class TDMMonitor {
     this.updateInterval = 60 * 1000; // 60 segundos
     this.updateTimer = null;
     this.chart = null;
-    // Repo público → leer directo de GitHub raw (sin depender de deploys de Vercel)
-    this.dataUrl = 'https://raw.githubusercontent.com/jmalagonlap/tdm-s4-monitor/main/gps-data.json';
+    // Cloudflare Worker — actualiza cada minuto sin GitHub ni Vercel
+    // Reemplazar con la URL real del worker después de desplegarlo
+    this.dataUrl = 'https://tdm-gps-monitor.REEMPLAZAR.workers.dev';
   }
 
   async init() {
