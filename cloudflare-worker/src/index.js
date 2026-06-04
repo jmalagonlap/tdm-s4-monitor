@@ -14,7 +14,7 @@
 const API_BASE_URL      = 'https://api.artimo.com.co';
 const API_TOKENS_ENDPOINT = '/tokens';
 const API_GPS_ENDPOINT  = '/rtdata/gpsv2/latest';
-const MAX_RECORDS       = 1440; // 24h a 1 min/poll
+const MAX_RECORDS       = 2880; // 24h a ~30s/poll (2 polls por minuto)
 
 const VEHICLES = [
   { idSyrus4G: 'CO_LKN501', idMixFM: 'CO_1LKN501', label: 'LKN501' },
@@ -67,10 +67,14 @@ export default {
   },
 
   /**
-   * Cron trigger — cada minuto
+   * Cron trigger — cada minuto, ejecuta 2 polls (≈ cada 30s)
    */
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(pollGPS(env));
+    ctx.waitUntil((async () => {
+      await pollGPS(env);                           // Poll 1 — inicio del minuto
+      await new Promise(r => setTimeout(r, 31000)); // Esperar 31 segundos
+      await pollGPS(env);                           // Poll 2 — a los 31s
+    })());
   },
 };
 
