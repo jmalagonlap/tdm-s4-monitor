@@ -3,34 +3,39 @@
  * Polling GPS cada 1 minuto + resúmenes diarios históricos
  *
  * KV keys:
- *   gps-data      → últimas 24h (minuto a minuto, max 1440 registros)
- *   daily-history → resúmenes diarios acumulados indefinidamente
+ *   gps-data       → últimas 24h, solo CONTEOS (sin coordenadas) — JSON pequeño
+ *   prev-positions → última posición por vehículo, solo para deduplicación (~1KB)
+ *   daily-history  → resúmenes diarios acumulados indefinidamente
+ *   auth-token     → token cacheado con expiración
  *
  * HTTP endpoints:
  *   GET /        → { records: [...24h], daily: [...history] }
  *   GET /poll    → disparo manual para pruebas
  */
 
-const API_BASE_URL      = 'https://api.artimo.com.co';
+const API_BASE_URL        = 'https://api.artimo.com.co';
 const API_TOKENS_ENDPOINT = '/tokens';
-const API_GPS_ENDPOINT  = '/rtdata/gpsv2/latest';
-const MAX_RECORDS       = 1440; // 24h a 1 min/poll
+const API_GPS_ENDPOINT    = '/rtdata/gpsv2/latest';
+const MAX_RECORDS         = 1440; // 24h a 1 min/poll
 
 const VEHICLES = [
-  { idSyrus4G: 'CO_LKN501', idMixFM: 'CO_1LKN501', label: 'LKN501' },
-  { idSyrus4G: 'CO_JYX434', idMixFM: 'CO_1JYX434', label: 'JYX434' },
-  { idSyrus4G: 'CO_STE582', idMixFM: 'CO_1STE582', label: 'STE582' },
-  { idSyrus4G: 'CO_STE577', idMixFM: 'CO_1STE577', label: 'STE577' },
-  { idSyrus4G: 'CO_STE060', idMixFM: 'CO_1STE060', label: 'STE060' },
+  { idSyrus4G: 'CO_LKN501',  idMixFM: 'CO_1LKN501',  label: 'LKN501' },
+  { idSyrus4G: 'CO_JYX434',  idMixFM: 'CO_1JYX434',  label: 'JYX434' },
+  { idSyrus4G: 'CO_STE582',  idMixFM: 'CO_1STE582',  label: 'STE582' },
+  { idSyrus4G: 'CO_STE577',  idMixFM: 'CO_1STE577',  label: 'STE577' },
+  { idSyrus4G: 'CO_STE060',  idMixFM: 'CO_1STE060',  label: 'STE060' },
 ];
+
+// Colombia = UTC-5, sin horario de verano
+// Usar offset fijo es ~10× más rápido que toLocaleDateString con timeZone
+function bogotaDateStr(isoTimestamp) {
+  const bogotaMs = new Date(isoTimestamp).getTime() - 5 * 60 * 60 * 1000;
+  return new Date(bogotaMs).toISOString().slice(0, 10); // "YYYY-MM-DD"
+}
 
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
 export default {
-  /**
-   * HTTP handler — sirve datos al dashboard
-   * Retorna { records: [...24h], daily: [...allDays] }
-   */
   async fetch(request, env) {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
@@ -44,7 +49,6 @@ export default {
 
     const url = new URL(request.url);
 
-    // GET /poll — disparo manual para pruebas
     if (url.pathname === '/poll') {
       await pollGPS(env);
       return new Response(JSON.stringify({ ok: true, message: 'Poll ejecutado' }), {
@@ -52,23 +56,18 @@ export default {
       });
     }
 
-    // GET / — retorna datos completos (24h + histórico diario)
+    // GET / — retorna datos al dashboard
     const [gpsData, dailyHistory] = await Promise.all([
-      env.GPS_KV.get('gps-data',      { type: 'json' }),
-      env.GPS_KV.get('daily-history',  { type: 'json' }),
+      env.GPS_KV.get('gps-data',     { type: 'json' }),
+      env.GPS_KV.get('daily-history', { type: 'json' }),
     ]);
 
-    const response = {
-      records: (gpsData?.records)       || [],
-      daily:   (dailyHistory?.days)     || [],
-    };
-
-    return new Response(JSON.stringify(response), { headers: corsHeaders });
+    return new Response(JSON.stringify({
+      records: gpsData?.records   || [],
+      daily:   dailyHistory?.days || [],
+    }), { headers: corsHeaders });
   },
 
-  /**
-   * Cron trigger — cada minuto (API permite mínimo 30s entre consultas)
-   */
   async scheduled(event, env, ctx) {
     ctx.waitUntil(pollGPS(env));
   },
@@ -87,17 +86,17 @@ async function pollGPS(env) {
 
   console.log(`🚀 Poll — ${new Date().toISOString()}`);
 
-  // 1. Token — reutiliza el cacheado si aún es válido (expira en 120 min)
+  // 1. Token cacheado
   const token = await getOrRefreshToken(env, username, password);
   console.log('✓ Token');
 
-  // 2. GPS — si el token expiró (401), borrar caché y reintentar con token nuevo
+  // 2. GPS con auto-refresh en 401
   let gpsMap;
   try {
     gpsMap = await getAllGPSData(token);
   } catch (err) {
     if (err.message.includes('401')) {
-      console.log('🔄 Token expirado (401) — invalidando caché y reintentando...');
+      console.log('🔄 Token expirado (401) — reintentando...');
       await env.GPS_KV.delete('auth-token');
       const freshToken = await getOrRefreshToken(env, username, password);
       gpsMap = await getAllGPSData(freshToken);
@@ -107,42 +106,46 @@ async function pollGPS(env) {
   }
   console.log('✓ GPS');
 
-  // 3. Datos previos
-  const existing  = (await env.GPS_KV.get('gps-data', { type: 'json' })) || { records: [] };
-  const prevRecord = existing.records.length > 0
-    ? existing.records[existing.records.length - 1]
-    : null;
+  // 3. Leer estado previo en paralelo (KV reads son async, no consumen CPU)
+  const [existing, prevPos] = await Promise.all([
+    env.GPS_KV.get('gps-data',       { type: 'json' }).then(d => d || { records: [] }),
+    env.GPS_KV.get('prev-positions',  { type: 'json' }).then(d => d || { vehiculos: {} }),
+  ]);
 
   // 4. Procesar vehículos
-  // Timestamp en ISO (UTC) — el dashboard lo convierte a hora Colombia al mostrar
-  const timestamp  = new Date().toISOString();
-  let syrusTotal   = 0;
-  let mixfmTotal   = 0;
+  const timestamp   = new Date().toISOString();
+  let syrusTotal    = 0;
+  let mixfmTotal    = 0;
   const vehicleData = {};
+  const newPrevPos  = { vehiculos: {} }; // estado para el próximo poll (~1KB)
 
   for (const v of VEHICLES) {
     const syrusRaw = gpsMap[v.idSyrus4G] || [];
     const mixfmRaw = gpsMap[v.idMixFM]   || [];
 
-    const syrusResult = countNewGPS(syrusRaw, prevRecord?.vehiculos?.[v.label]?.syrus);
-    const mixfmResult = countNewGPS(mixfmRaw, prevRecord?.vehiculos?.[v.label]?.mixfm);
+    const prevVehicle = prevPos.vehiculos[v.label] || {};
+    const syrusResult = countNewGPS(syrusRaw, prevVehicle.syrus || []);
+    const mixfmResult = countNewGPS(mixfmRaw, prevVehicle.mixfm || []);
 
+    // Solo conteos en el registro histórico — SIN coordenadas → JSON pequeño
     vehicleData[v.label] = {
       placaSyrus: v.idSyrus4G,
       placaMixFM: v.idMixFM,
       syrus: {
         newPositions:   syrusResult.newCount,
         totalPositions: syrusResult.totalCount,
-        // Guardamos TODAS las posiciones actuales (no solo las nuevas)
-        // para que el siguiente poll compara contra el estado actual completo
-        positions:      syrusResult.allPositions,
       },
       mixfm: {
         newPositions:   mixfmResult.newCount,
         totalPositions: mixfmResult.totalCount,
-        positions:      mixfmResult.allPositions,
       },
       diferencia: syrusResult.newCount - mixfmResult.newCount,
+    };
+
+    // Estado de posiciones para deduplicación del próximo poll
+    newPrevPos.vehiculos[v.label] = {
+      syrus: syrusResult.allPositions,
+      mixfm: mixfmResult.allPositions,
     };
 
     syrusTotal += syrusResult.newCount;
@@ -163,8 +166,11 @@ async function pollGPS(env) {
     existing.records = existing.records.slice(-MAX_RECORDS);
   }
 
-  // 6. Guardar en KV
-  await env.GPS_KV.put('gps-data', JSON.stringify(existing));
+  // 6. Guardar en KV en paralelo
+  await Promise.all([
+    env.GPS_KV.put('gps-data',      JSON.stringify(existing)),
+    env.GPS_KV.put('prev-positions', JSON.stringify(newPrevPos)),
+  ]);
   console.log(`✅ Registros en KV: ${existing.records.length}`);
 
   // 7. Compactar días anteriores al histórico diario
@@ -173,18 +179,14 @@ async function pollGPS(env) {
 
 // ─── Compactación diaria ──────────────────────────────────────────────────────
 
-/**
- * Detecta si hay días completos (no el de hoy) que aún no tienen
- * entrada en daily-history, y los agrega.
- */
 async function compactDailyIfNeeded(env, records) {
-  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+  // Fecha de hoy en Bogotá (UTC-5) — fast, sin Intl API
+  const todayStr = bogotaDateStr(new Date().toISOString());
 
-  // Agrupar registros por fecha (excluyendo hoy)
   const byDate = {};
   for (const r of records) {
-    const d = new Date(r.timestamp).toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
-    if (d === todayStr) continue; // hoy se compactará mañana
+    const d = bogotaDateStr(r.timestamp);
+    if (d === todayStr) continue;
     if (!byDate[d]) byDate[d] = [];
     byDate[d].push(r);
   }
@@ -192,10 +194,8 @@ async function compactDailyIfNeeded(env, records) {
   const pastDates = Object.keys(byDate);
   if (pastDates.length === 0) return;
 
-  // Leer histórico actual
   const history = (await env.GPS_KV.get('daily-history', { type: 'json' })) || { days: [] };
   const alreadySummarized = new Set(history.days.map(d => d.date));
-
   const datesToAdd = pastDates.filter(d => !alreadySummarized.has(d));
   if (datesToAdd.length === 0) return;
 
@@ -226,21 +226,15 @@ async function compactDailyIfNeeded(env, records) {
       vehiculos,
     });
 
-    console.log(`📊 Día compactado: ${date} → S=${syrusTotal} M=${mixfmTotal} (${dayRecords.length} registros)`);
+    console.log(`📊 Día compactado: ${date} → S=${syrusTotal} M=${mixfmTotal}`);
   }
 
-  // Ordenar por fecha ascendente
   history.days.sort((a, b) => a.date.localeCompare(b.date));
-
   await env.GPS_KV.put('daily-history', JSON.stringify(history));
 }
 
 // ─── API ÁRTIMO ───────────────────────────────────────────────────────────────
 
-/**
- * Devuelve el token cacheado en KV si aún es válido,
- * o solicita uno nuevo y lo guarda. Token válido por 120 min → cache 110 min.
- */
 async function getOrRefreshToken(env, username, password) {
   const cached = await env.GPS_KV.get('auth-token', { type: 'json' });
   const now    = Date.now();
@@ -251,15 +245,11 @@ async function getOrRefreshToken(env, username, password) {
     return cached.token;
   }
 
-  // Solicitar token nuevo
   console.log('🔐 Solicitando nuevo token...');
   const token = await obtainToken(username, password);
-
-  // Guardar en KV con expiración de 110 minutos
   const expiresAt = now + (110 * 60 * 1000);
   await env.GPS_KV.put('auth-token', JSON.stringify({ token, expiresAt }));
-  console.log('✓ Token nuevo guardado en KV (válido 110 min)');
-
+  console.log('✓ Token nuevo guardado (válido 110 min)');
   return token;
 }
 
@@ -278,10 +268,9 @@ async function obtainToken(username, password) {
 }
 
 async function getAllGPSData(token) {
-  // Filtrar solo las 10 placas monitoreadas (5 Syrus4G + 5 Mix FM)
   // Comas literales — la API no acepta %2C (encodeURIComponent)
   const plates = VEHICLES.flatMap(v => [v.idSyrus4G, v.idMixFM]).join(',');
-  const url = `${API_BASE_URL}${API_GPS_ENDPOINT}?plates=${plates}`;
+  const url    = `${API_BASE_URL}${API_GPS_ENDPOINT}?plates=${plates}`;
 
   console.log(`📡 GPS URL: ${url}`);
 
@@ -318,32 +307,34 @@ async function getAllGPSData(token) {
 
 // ─── Deduplicación ────────────────────────────────────────────────────────────
 
-function countNewGPS(currentData, previousData) {
-  // prevKeys: estado COMPLETO del poll anterior (no solo las nuevas de ese poll)
-  // Esto evita doble conteo cuando un vehículo no mueve varios polls seguidos.
+/**
+ * Compara posiciones actuales contra las del poll anterior.
+ * prevPositions: array de { date, latitude, longitude } del poll anterior.
+ * Retorna newCount (posiciones realmente nuevas) y allPositions (estado actual completo).
+ */
+function countNewGPS(currentData, prevPositions) {
   const prevKeys = new Set(
-    (previousData?.positions || []).map(p => `${p.latitude},${p.longitude},${p.date}`)
+    (prevPositions || []).map(p => `${p.latitude},${p.longitude},${p.date}`)
   );
 
-  const newPositions    = []; // posiciones realmente nuevas este poll
-  const allPositions    = []; // estado completo actual (para el próximo poll)
+  let newCount = 0;
+  const allPositions = [];
 
   for (const r of currentData) {
     const date = r.lastDatetime || r.date || '';
     const key  = `${r.latitude},${r.longitude},${date}`;
-    const pos  = { date, latitude: r.latitude, longitude: r.longitude, speed: r.speed || 0 };
+    const pos  = { date, latitude: r.latitude, longitude: r.longitude };
 
-    allPositions.push(pos); // siempre guardamos la posición actual
+    allPositions.push(pos);
 
     if (!prevKeys.has(key)) {
-      newPositions.push(pos); // solo contamos si es diferente al poll anterior
+      newCount++;
     }
   }
 
   return {
-    newCount:     newPositions.length,
+    newCount,
     totalCount:   currentData.length,
-    positions:    newPositions,  // para logging / display
-    allPositions: allPositions,  // para comparar en el SIGUIENTE poll
+    allPositions, // guardado en prev-positions (KV pequeño, no en historial)
   };
 }
