@@ -38,7 +38,9 @@ function bogotaDateStr(isoTimestamp) {
 export default {
   async fetch(request, env) {
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin':  '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Cache-Control, Content-Type',
       'Content-Type': 'application/json',
       'Cache-Control': 'no-store, no-cache, must-revalidate',
     };

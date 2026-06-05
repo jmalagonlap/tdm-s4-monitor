@@ -101,9 +101,8 @@ class TDMMonitor {
     try {
       console.log('📥 Cargando datos...');
       // Cache-bust para evitar que el CDN de GitHub sirva versión antigua
-      const response = await fetch(this.dataUrl + '?nocache=' + Date.now(), {
+      const response = await fetch(this.dataUrl + '?t=' + Date.now(), {
         cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' }
       });
 
       if (!response.ok) {
