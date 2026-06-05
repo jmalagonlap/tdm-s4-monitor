@@ -114,6 +114,7 @@ async function pollGPS(env) {
     : null;
 
   // 4. Procesar vehículos
+  // Timestamp en ISO (UTC) — el dashboard lo convierte a hora Colombia al mostrar
   const timestamp  = new Date().toISOString();
   let syrusTotal   = 0;
   let mixfmTotal   = 0;
@@ -132,12 +133,14 @@ async function pollGPS(env) {
       syrus: {
         newPositions:   syrusResult.newCount,
         totalPositions: syrusResult.totalCount,
-        positions:      syrusResult.positions,
+        // Guardamos TODAS las posiciones actuales (no solo las nuevas)
+        // para que el siguiente poll compara contra el estado actual completo
+        positions:      syrusResult.allPositions,
       },
       mixfm: {
         newPositions:   mixfmResult.newCount,
         totalPositions: mixfmResult.totalCount,
-        positions:      mixfmResult.positions,
+        positions:      mixfmResult.allPositions,
       },
       diferencia: syrusResult.newCount - mixfmResult.newCount,
     };
@@ -316,22 +319,31 @@ async function getAllGPSData(token) {
 // ─── Deduplicación ────────────────────────────────────────────────────────────
 
 function countNewGPS(currentData, previousData) {
+  // prevKeys: estado COMPLETO del poll anterior (no solo las nuevas de ese poll)
+  // Esto evita doble conteo cuando un vehículo no mueve varios polls seguidos.
   const prevKeys = new Set(
     (previousData?.positions || []).map(p => `${p.latitude},${p.longitude},${p.date}`)
   );
 
-  const newPositions = [];
+  const newPositions    = []; // posiciones realmente nuevas este poll
+  const allPositions    = []; // estado completo actual (para el próximo poll)
+
   for (const r of currentData) {
     const date = r.lastDatetime || r.date || '';
     const key  = `${r.latitude},${r.longitude},${date}`;
+    const pos  = { date, latitude: r.latitude, longitude: r.longitude, speed: r.speed || 0 };
+
+    allPositions.push(pos); // siempre guardamos la posición actual
+
     if (!prevKeys.has(key)) {
-      newPositions.push({ date, latitude: r.latitude, longitude: r.longitude, speed: r.speed || 0 });
+      newPositions.push(pos); // solo contamos si es diferente al poll anterior
     }
   }
 
   return {
-    newCount:   newPositions.length,
-    totalCount: currentData.length,
-    positions:  newPositions,
+    newCount:     newPositions.length,
+    totalCount:   currentData.length,
+    positions:    newPositions,  // para logging / display
+    allPositions: allPositions,  // para comparar en el SIGUIENTE poll
   };
 }
