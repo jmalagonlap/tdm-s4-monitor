@@ -56,6 +56,17 @@ export default {
       });
     }
 
+    // GET /reset — limpia gps-data SIN leer el archivo grande (no consume CPU)
+    // Úsalo solo cuando gps-data esté muy grande y cause exceededCpu
+    if (url.pathname === '/reset') {
+      await env.GPS_KV.put('gps-data',      JSON.stringify({ records: [] }));
+      await env.GPS_KV.put('prev-positions', JSON.stringify({ vehiculos: {} }));
+      return new Response(JSON.stringify({
+        ok: true,
+        message: 'gps-data limpiado. Los datos de daily-history siguen intactos.',
+      }), { headers: corsHeaders });
+    }
+
     // GET / — retorna datos al dashboard
     const [gpsData, dailyHistory] = await Promise.all([
       env.GPS_KV.get('gps-data',     { type: 'json' }),
