@@ -196,16 +196,21 @@ async function compactDailyIfNeeded(env, records) {
   // Fecha de hoy en Bogotá (UTC-5) — fast, sin Intl API
   const todayStr = bogotaDateStr(new Date().toISOString());
 
-  const byDate = {};
+  const byDate     = {};
+  const todayRecs  = []; // registros de hoy (se quedan en gps-data)
+
   for (const r of records) {
     const d = bogotaDateStr(r.timestamp);
-    if (d === todayStr) continue;
+    if (d === todayStr) {
+      todayRecs.push(r);
+      continue;
+    }
     if (!byDate[d]) byDate[d] = [];
     byDate[d].push(r);
   }
 
   const pastDates = Object.keys(byDate);
-  if (pastDates.length === 0) return;
+  if (pastDates.length === 0) return; // nada que compactar
 
   const history = (await env.GPS_KV.get('daily-history', { type: 'json' })) || { days: [] };
   const alreadySummarized = new Set(history.days.map(d => d.date));
@@ -239,11 +244,19 @@ async function compactDailyIfNeeded(env, records) {
       vehiculos,
     });
 
-    console.log(`📊 Día compactado: ${date} → S=${syrusTotal} M=${mixfmTotal}`);
+    console.log(`📊 Día compactado: ${date} → S=${syrusTotal} M=${mixfmTotal} (${dayRecords.length} registros)`);
   }
 
   history.days.sort((a, b) => a.date.localeCompare(b.date));
-  await env.GPS_KV.put('daily-history', JSON.stringify(history));
+
+  // Guardar histórico Y limpiar gps-data dejando solo registros de hoy.
+  // Esto mantiene gps-data pequeño (~horas de hoy) después de cada compactación.
+  await Promise.all([
+    env.GPS_KV.put('daily-history', JSON.stringify(history)),
+    env.GPS_KV.put('gps-data',      JSON.stringify({ records: todayRecs })),
+  ]);
+
+  console.log(`✅ gps-data limpiado: ${todayRecs.length} registros de hoy conservados`);
 }
 
 // ─── API ÁRTIMO ───────────────────────────────────────────────────────────────
