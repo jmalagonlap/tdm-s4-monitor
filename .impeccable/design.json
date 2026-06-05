@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-04T00:00:00Z",
+  "title": "Design System: TDM S4 Monitor",
+  "extensions": {
+    "colorMeta": {
+      "primary":       { "role": "primary",  "displayName": "Rojo Institucional ÁRTIMO", "canonical": "#E10B17", "tonalRamp": ["#5C0008","#7D0010","#9A0813","#BC1818","#D4141B","#E10B17","#F05059","#FCC5C7"] },
+      "primary-deep":  { "role": "primary",  "displayName": "Rojo Profundo",             "canonical": "#BC1818", "tonalRamp": ["#3E0005","#600009","#820010","#A21015","#BC1818","#D32020","#E86868","#F9BEBE"] },
+      "ink":           { "role": "neutral",  "displayName": "Tinta Principal",            "canonical": "#1A1A1A", "tonalRamp": ["#0A0A0A","#1A1A1A","#2E2E2E","#3F3F3F","#5A5A59","#8A8A89","#C4C4C4","#F2F2F2"] },
+      "ink-secondary": { "role": "neutral",  "displayName": "Tinta Secundaria",           "canonical": "#5A5A59", "tonalRamp": ["#1A1A1A","#2E2E2E","#454544","#5A5A59","#727271","#8A8A89","#B4B4B3","#E8E8E8"] },
+      "surface":       { "role": "neutral",  "displayName": "Superficie Base",            "canonical": "#FFFFFF", "tonalRamp": ["#C4C4C4","#D4D4D4","#E0E0E0","#EBEBEB","#F2F2F2","#F5F6F8","#FAFAFA","#FFFFFF"] },
+      "syrus":         { "role": "secondary","displayName": "Verde Syrus4G",              "canonical": "#2E7D32", "tonalRamp": ["#0D3B0F","#1B5E20","#2E7D32","#388E3C","#43A047","#66BB6A","#A5D6A7","#E8F5E9"] },
+      "mixfm":         { "role": "tertiary", "displayName": "Azul Mix FM",                "canonical": "#1976D2", "tonalRamp": ["#0A2E6A","#0D47A1","#1565C0","#1976D2","#1E88E5","#42A5F5","#90CAF9","#E3F2FD"] },
+      "diferencia":    { "role": "tertiary", "displayName": "Naranja Diferencia",         "canonical": "#F57C00", "tonalRamp": ["#6D3200","#BF360C","#E65100","#F57C00","#FB8C00","#FFA726","#FFD54F","#FFF8E1"] }
+    },
+    "shadows": [
+      { "name": "ambient",    "value": "0 2px 12px rgba(0,0,0,0.08)", "purpose": "Cards en reposo. Separa superficie del fondo sin dominar." },
+      { "name": "structural", "value": "0 4px 16px rgba(0,0,0,0.12)", "purpose": "Header. Ancla la barra superior como superficie dominante." },
+      { "name": "elevated",   "value": "0 8px 24px rgba(0,0,0,0.12)", "purpose": "Cards en hover. Señal clara de interactividad." }
+    ],
+    "motion": [
+      { "name": "ease-out",  "value": "cubic-bezier(0.23, 1, 0.32, 1)", "purpose": "Interacciones de UI: entradas, hover, estados activos." },
+      { "name": "transition-action", "value": "background-color 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out", "purpose": "Botones y elementos con cambio de color." },
+      { "name": "transition-press",  "value": "transform 160ms cubic-bezier(0.23,1,0.32,1)", "purpose": "Scale en :active para todos los botones." }
+    ],
+    "breakpoints": [
+      { "name": "xl",  "value": "1024px", "purpose": "Reducción de padding en contenido principal." },
+      { "name": "md",  "value": "768px",  "purpose": "Layout mobile: stats 2col, middle-row 1col." },
+      { "name": "sm",  "value": "480px",  "purpose": "Stats 1col, padding mínimo." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón Primario (Login)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "CTA principal del login. Rojo ÁRTIMO, texto uppercase, activo con scale.",
+      "html": "<button class=\"ds-btn-primary\">Ingresar al sistema</button>",
+      "css": ".ds-btn-primary { width: 100%; padding: 13px 24px; background: #E10B17; border: none; border-radius: 4px; color: #fff; font-family: 'Open Sans', Arial, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: opacity 150ms ease-out, transform 160ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-primary:hover { opacity: 0.88; } .ds-btn-primary:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Botón Secundario",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acciones del dashboard (exportar, limpiar). Gris en reposo, rojo en hover.",
+      "html": "<button class=\"ds-btn-secondary\">Exportar CSV</button>",
+      "css": ".ds-btn-secondary { padding: 9px 18px; background: #F2F2F2; border: 1px solid #E0E0E0; border-radius: 4px; font-family: 'Open Sans', Arial, sans-serif; font-weight: 700; font-size: 10px; cursor: pointer; color: #1A1A1A; text-transform: uppercase; letter-spacing: 0.08em; transition: background-color 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out, transform 160ms cubic-bezier(0.23,1,0.32,1); } @media (hover: hover) and (pointer: fine) { .ds-btn-secondary:hover { background: #E10B17; color: #fff; border-color: #E10B17; } } .ds-btn-secondary:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "stat-card",
+      "description": "Card de métrica clave. Borde top semántico, sombra ambient en reposo.",
+      "html": "<div class=\"ds-stat-card ds-stat-syrus\"><div class=\"ds-stat-icon\">📡</div><div class=\"ds-stat-body\"><h3>Syrus4G</h3><div class=\"ds-stat-number\">1,204</div><p class=\"ds-stat-label\">Posiciones hoy</p></div></div>",
+      "css": ".ds-stat-card { background: #fff; border: 1px solid #E0E0E0; border-top: 3px solid #E0E0E0; border-radius: 6px; padding: 24px 24px 20px; display: flex; gap: 18px; align-items: flex-start; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: box-shadow 220ms ease-out, transform 220ms cubic-bezier(0.23,1,0.32,1); } .ds-stat-syrus { border-top-color: #2E7D32; } .ds-stat-mixfm { border-top-color: #1976D2; } .ds-stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); transform: translateY(-3px); } .ds-stat-icon { font-size: 26px; min-width: 40px; text-align: center; margin-top: 4px; } .ds-stat-body h3 { font-size: 10px; font-weight: 700; color: #5A5A59; text-transform: uppercase; letter-spacing: 0.10em; margin-bottom: 8px; } .ds-stat-number { font-size: 40px; font-weight: 700; color: #E10B17; line-height: 1; margin-bottom: 6px; } .ds-stat-label { font-size: 12px; color: #5A5A59; }"
+    },
+    {
+      "name": "Input de Texto",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Campo de formulario con icono inline y focus ring rojo ÁRTIMO.",
+      "html": "<div class=\"ds-field-wrap\"><svg class=\"ds-field-ico\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2\"/><circle cx=\"12\" cy=\"7\" r=\"4\"/></svg><input class=\"ds-field-input\" type=\"text\" placeholder=\"usuario\"/></div>",
+      "css": ".ds-field-wrap { position: relative; } .ds-field-ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: #8A8A89; pointer-events: none; transition: color 150ms ease-out; } .ds-field-wrap:focus-within .ds-field-ico { color: #E10B17; } .ds-field-input { width: 100%; padding: 11px 11px 11px 36px; background: #F5F6F8; border: 1px solid rgba(0,0,0,0.13); border-radius: 4px; color: #1A1A1A; font-family: 'Open Sans', Arial, sans-serif; font-size: 14px; outline: none; transition: border-color 150ms ease-out, box-shadow 150ms ease-out; } .ds-field-input:focus { border-color: #E10B17; box-shadow: 0 0 0 3px rgba(225,11,23,0.08); }"
+    },
+    {
+      "name": "Badge de Estado",
+      "kind": "chip",
+      "refersTo": "badge-active",
+      "description": "Indicador de estado de vehículo: Activo / Error / Pendiente.",
+      "html": "<span class=\"ds-badge ds-badge-active\">Activo</span>",
+      "css": ".ds-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; } .ds-badge-active { background: rgba(46,125,50,0.12); color: #2E7D32; } .ds-badge-inactive { background: rgba(244,67,54,0.12); color: #D32F2F; } .ds-badge-pending { background: rgba(255,193,7,0.15); color: #E65100; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Tablero Directivo",
+    "overview": "Este sistema visual se comporta como el tablero de sala de directivos: toda la información está presente, ordenada por importancia, sin adorno que compita con el dato. El rojo ÁRTIMO (#E10B17) es la firma institucional — aparece en los bordes de acento superiores de los cards, en la línea que separa los encabezados de sección, en el botón primario. Es la única señal de identidad fuerte; el resto del sistema se contiene para que los colores semánticos puedan hablar con claridad.\n\nEl espacio en blanco es intencional y disciplinado. Las secciones respiran. El dato más importante — la comparativa Syrus4G vs Mix FM — es legible en tres segundos sin scroll. Las tablas detalladas y el historial son secundarios: están presentes pero no compiten con la lectura rápida.",
+    "keyCharacteristics": [
+      "Un solo acento cromático (rojo ÁRTIMO) — el resto son neutrales y colores semánticos",
+      "Sombras estructurales: presentes y legibles, no decorativas",
+      "Espaciado ejecutivo: secciones respiran, información jerarquizada visualmente",
+      "Tipografía funcional: Open Sans en tres pesos, sin fuentes adicionales",
+      "Identidad a través del borde rojo superior — no mediante gradientes ni glassmorphism"
+    ],
+    "rules": [
+      { "name": "La Regla del Color Único",    "body": "El rojo ÁRTIMO aparece en máximo tres roles simultáneos en cualquier pantalla.",                                    "section": "colors" },
+      { "name": "La Regla del Semántico Exclusivo", "body": "Verde, azul y naranja son propiedad de los datos. No se usan para elementos UI genéricos.",                "section": "colors" },
+      { "name": "La Regla del Peso Único por Nivel", "body": "Cada nivel tipográfico tiene un peso fijo. No se combina 700 con italic, ni 300 con uppercase.",          "section": "typography" },
+      { "name": "La Regla del Par Único",      "body": "Nunca border: 1px solid + box-shadow grande (blur ≥ 16px) en el mismo elemento.",                               "section": "elevation" },
+      { "name": "La Regla del Estado-Responsive","body": "Las sombras elevated solo aparecen en hover — nunca en reposo.",                                              "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar border-top: 3px solid [color semántico] como acento en stat cards",
+      "Do especificar propiedades exactas en transition: background-color 200ms ease-out, transform 160ms ease-out",
+      "Do guardar el @media (hover: hover) and (pointer: fine) en todos los efectos hover",
+      "Do incluir @media (prefers-reduced-motion: reduce) en animaciones",
+      "Do mantener colores semánticos exclusivos para sus datos respectivos"
+    ],
+    "donts": [
+      "Don't usar border-left mayor a 1px como acento de color en cards — patrón Bootstrap prohibido",
+      "Don't usar border: 1px solid + box-shadow con blur ≥ 16px en el mismo elemento",
+      "Don't usar border-radius mayor a 8px en cards o secciones",
+      "Don't usar transition: all — especifica las propiedades exactas",
+      "Don't agregar efectos hover sin @media (hover: hover) and (pointer: fine)",
+      "Don't usar gradientes de texto (background-clip: text)",
+      "Don't usar glassmorphism como decoración",
+      "Don't usar la estética SaaS Silicon Valley con fondos cream/beige"
+    ]
+  }
+}
