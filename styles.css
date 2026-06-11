@@ -4,13 +4,22 @@
    ═════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Identidad ÁRTIMO ───────────────────────────────────── */
-  --artimo-rojo-vivo:    #E10B17;
-  --artimo-rojo-oscuro:  #BC1818;
-  --artimo-gris:         #5A5A59;
+  /* ── Identidad ÁRTIMO (paleta completa del manual) ──────── */
+  --artimo-rojo-oscuro:  #BC1818;  /* Pantone 7621 C — principal */
+  --artimo-rojo-vivo:    #E10B17;  /* Pantone 185 C */
+  --artimo-rojo-medio:   #E42520;  /* Pantone 485 C */
+  --artimo-rojo-naranja: #E63B1E;  /* Pantone 179 C */
+  --artimo-gris:         #5A5A59;  /* Pantone Cool Gray 11 */
   --artimo-negro:        #1A1A1A;
   --artimo-blanco:       #FFFFFF;
   --artimo-gris-claro:   #F2F2F2;
+
+  /* ── Colores por módulo ÁRTIMO ──────────────────────────── */
+  --artimo-mod-bi:           #ED720E;  /* Business Intelligence */
+  --artimo-mod-operacion:    #E74615;  /* Operación */
+  --artimo-mod-seguridad:    #C20C16;  /* Seguridad */
+  --artimo-mod-logistica:    #C23921;  /* Logística */
+  --artimo-mod-mantenimiento:#EA5A3D;  /* Mantenimiento */
 
   /* ── Colores semánticos del dato ────────────────────────── */
   --syrus-color:         #2E7D32;
@@ -47,7 +56,7 @@ html, body {
   font-family: 'Open Sans', Arial, sans-serif;
   font-weight: 300;
   color: var(--artimo-negro);
-  background-color: var(--artimo-gris-claro);
+  background-color: #F4F5F7;
 }
 
 /* ── Reduced motion ─────────────────────────────────────────── */
@@ -67,17 +76,16 @@ html, body {
 #login-screen {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
-  background: var(--surface-raised);
+  background: linear-gradient(135deg, #1A1A1A 0%, #3a0808 50%, #BC1818 100%);
 }
 
 .login-card {
   width: 100%; max-width: 376px; margin: 16px;
   background: var(--artimo-blanco);
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  border-top: 3px solid var(--artimo-rojo-vivo);
-  border-radius: 4px;
+  border: none;
+  border-radius: 16px;
   padding: 48px 40px 40px;
-  box-shadow: var(--shadow-structural);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
   animation: card-in 320ms var(--ease-out) both;
 }
 
@@ -187,13 +195,14 @@ html, body {
    ═════════════════════════════════════════════════════════════ */
 
 .header {
-  background-color: var(--artimo-blanco);
-  border-bottom: 2px solid var(--artimo-rojo-vivo);
-  padding: 18px 32px;
+  background-color: var(--artimo-negro);
+  border-bottom: none;
+  padding: 0 32px;
+  height: 56px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow-structural);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -211,17 +220,18 @@ html, body {
 }
 
 .header-left h1 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--artimo-rojo-oscuro);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--artimo-blanco);
   margin: 0;
   line-height: 1.2;
+  letter-spacing: 0.5px;
 }
 
 .subtitle {
   font-size: 11px;
-  color: var(--artimo-gris);
-  margin: 3px 0 0 0;
+  color: #9CA3AF;
+  margin: 2px 0 0 0;
   font-weight: 300;
   letter-spacing: 0.02em;
 }
@@ -236,16 +246,16 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
-  background-color: var(--artimo-gris-claro);
-  border-radius: 4px;
-  border: 1px solid var(--divider);
+  padding: 5px 12px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .status-label {
   font-weight: 700;
   font-size: 10px;
-  color: var(--artimo-gris);
+  color: #9CA3AF;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -253,29 +263,26 @@ html, body {
 .status-value {
   font-weight: 700;
   font-size: 12px;
-  color: var(--artimo-rojo-vivo);
+  color: #ff8080;
 }
-.status-value.active { color: var(--success-color); }
+.status-value.active { color: #6ee7b7; }
 
 .btn-logout {
-  padding: 8px 18px;
-  background-color: var(--artimo-gris-claro);
-  border: 1px solid var(--divider);
-  border-radius: 4px;
+  padding: 5px 12px;
+  background: none;
+  border: 1px solid #4B5563;
+  border-radius: 6px;
   font-family: 'Open Sans', Arial, sans-serif;
-  font-weight: 700;
-  font-size: 10px;
+  font-weight: 600;
+  font-size: 12px;
   cursor: pointer;
-  color: var(--artimo-negro);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  transition: background-color 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out, transform 160ms var(--ease-out);
+  color: #9CA3AF;
+  transition: border-color 200ms ease-out, color 200ms ease-out, transform 160ms var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
   .btn-logout:hover {
-    background-color: var(--artimo-rojo-vivo);
+    border-color: var(--artimo-rojo-oscuro);
     color: var(--artimo-blanco);
-    border-color: var(--artimo-rojo-vivo);
   }
 }
 .btn-logout:active { transform: scale(0.97); }
@@ -309,7 +316,7 @@ html, body {
   /* border-top como acento — no border-left (patrón prohibido) */
   border: 1px solid var(--divider);
   border-top: 3px solid var(--divider);
-  border-radius: 6px;
+  border-radius: 12px;
   padding: 24px 24px 20px;
   display: flex;
   gap: 18px;
@@ -440,7 +447,7 @@ html, body {
 
 .table-responsive {
   overflow-x: auto;
-  border-radius: 6px;
+  border-radius: 12px;
   box-shadow: var(--shadow-ambient);
 }
 
@@ -453,7 +460,7 @@ html, body {
 
 .comparison-table thead,
 .data-table thead {
-  background-color: var(--artimo-gris-claro);
+  background-color: #F9FAFB;
 }
 
 .comparison-table th,
@@ -535,7 +542,7 @@ html, body {
 .chart-container {
   background-color: var(--artimo-blanco);
   border: 1px solid var(--divider);
-  border-radius: 6px;
+  border-radius: 12px;
   padding: 16px 20px 20px;
   box-shadow: var(--shadow-ambient);
   position: relative;
@@ -559,7 +566,7 @@ html, body {
   padding: 9px 18px;
   background-color: var(--artimo-gris-claro);
   border: 1px solid var(--divider);
-  border-radius: 4px;
+  border-radius: 8px;
   font-family: 'Open Sans', Arial, sans-serif;
   font-weight: 700;
   font-size: 10px;
